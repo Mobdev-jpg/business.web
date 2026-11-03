@@ -113,3 +113,17 @@ body[data-theme="light"] .contact-info hr{border-color:#ccc!important}
 body[data-theme="light"] .notice{color:#555}
 body[data-theme="light"] .menu-toggle{color:#111}
 @media(max-width:680px){.theme-toggle{margin-left:0}body[data-theme="light"] .nav-links{background:#fff;border-color:#ccc}}
+
+/* Client feedback section */
+.reviews-section{border-top:1px solid #555;border-bottom:1px solid #555;background:#151515}
+.review-count{font-size:10px;letter-spacing:1.5px;color:#aaa;border:1px solid #666;padding:9px 12px;border-radius:7px}
+.reviews-empty{max-width:760px;margin:0 auto;text-align:center;padding:38px 34px;border:1px solid #666;border-radius:14px;background:#1c1c1c}
+.review-stars{font-size:21px;letter-spacing:7px;color:#eee;margin-bottom:15px}
+.reviews-empty h3{font-size:24px;margin-bottom:10px}
+.reviews-empty p{max-width:590px;margin:0 auto 22px;color:#bbb;font-size:14px}
+body[data-theme="light"] .reviews-section{background:#f4f4f4;border-color:#ccc}
+body[data-theme="light"] .review-count{color:#555;border-color:#aaa}
+body[data-theme="light"] .reviews-empty{background:#fff;border-color:#bbb}
+body[data-theme="light"] .review-stars{color:#222}
+body[data-theme="light"] .reviews-empty p{color:#555}
+@media(max-width:680px){.reviews-empty{padding:28px 18px}.section-heading{gap:14px}.review-count{display:inline-block;margin-top:15px}}
