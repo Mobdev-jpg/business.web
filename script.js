@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav){toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');toggle.textContent=open?'×':'☰'});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰'}))}document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());const themeButton=document.querySelector('.theme-toggle');const applyTheme=theme=>{document.body.dataset.theme=theme;if(themeButton){themeButton.textContent=theme==='dark'?'☼':'◐';themeButton.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');themeButton.title=theme==='dark'?'Switch to light theme':'Switch to dark theme'}document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111111':'#ffffff')};const saved='dark';applyTheme(saved);if(themeButton)themeButton.addEventListener('click',()=>{const next=document.body.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('orvexa-theme',next)}catch(e){}});const form=document.querySelector('.contact-form');if(form){form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form);const subject=encodeURIComponent('Website enquiry — '+data.get('name'));const body=encodeURIComponent('Name: '+data.get('name')+'\\nEmail: '+data.get('email')+'\\nBusiness: '+(data.get('business')||'Not provided')+'\\nService: '+data.get('service')+'\\n\\nProject details:\\n'+data.get('message'));window.location.href='mailto:arpansubba775@gmail.com?subject='+subject+'&body='+body})}});
+/* Respect reduced-motion preferences and stop background video when the tab is hidden. */
+(()=>{
+ const video=document.querySelector('.hero-work-video');
+ if(!video)return;
+ const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
+ const syncPlayback=()=>{
+  if(motion.matches||document.hidden){video.pause();return}
+  const attempt=video.play();
+  if(attempt&&typeof attempt.catch==='function')attempt.catch(()=>{});
+ };
+ video.addEventListener('error',()=>video.classList.add('video-failed'));
+ document.addEventListener('visibilitychange',syncPlayback);
+ if(typeof motion.addEventListener==='function')motion.addEventListener('change',syncPlayback);
+ syncPlayback();
+})();
 /* Visitor feedback — browser-local until a shared review database is connected. */
 (()=>{
  const KEY='orvexa-public-reviews-v1';
