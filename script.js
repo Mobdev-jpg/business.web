@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySel
  const video=document.querySelector('.hero-work-video');
  if(!video)return;
  const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
+ video.muted=true;
+ video.defaultMuted=true;
+ video.playsInline=true;
  let retryTimer=null;
  const clearRetry=()=>{if(retryTimer){clearTimeout(retryTimer);retryTimer=null}};
  const tryPlay=()=>{
@@ -130,12 +133,12 @@ document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySel
   if(lineIndex>=example.lines.length){
    if(state)state.textContent='BUILD SUCCESS';
    if(build){build.textContent='READY TO PREVIEW';build.classList.add('is-done')}
-   schedule(1500);
+   if(timer)clearTimeout(timer);
    timer=setTimeout(()=>{
     exampleIndex=(exampleIndex+1)%examples.length;
     resetExample();
     typeNext();
-   },1550);
+   },1650);
    return;
   }
   const line=example.lines[lineIndex];
