@@ -116,7 +116,6 @@ if (modal) {
     if (profileFallback) profileFallback.hidden = true;
     if (profileMiniAvatar) {
       profileMiniAvatar.textContent = initialsFor(displayNameFor(user, profile));
-      profileMiniAvatar.classList.add("has-avatar");
     }
   };
 
@@ -286,19 +285,25 @@ if (modal) {
   const loadPrivateAvatar = async (user, profile, requestId) => {
     revokeAvatarUrl();
     showAvatarFallback(user, profile);
-    if (!profile.avatarPath || !storage) {
-      if (profileRemoveButton) profileRemoveButton.hidden = !profile.avatarPath;
-      return;
+    if (!profile.avatarPath) {
+      if (profileRemoveButton) profileRemoveButton.hidden = true;
+      return true;
+    }
+    if (!storage) {
+      if (profileRemoveButton) profileRemoveButton.hidden = false;
+      return false;
     }
     try {
       const bytes = await getBytes(storageRef(storage, profile.avatarPath), MAX_AVATAR_BYTES);
       if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return;
       renderAvatarFromBytes(bytes, profile.avatarType || "image/jpeg", user, profile);
       if (profileRemoveButton) profileRemoveButton.hidden = false;
+      return true;
     } catch (error) {
       console.error("ORVEXA private avatar load failed:", error?.code || error);
       if (profileRemoveButton) profileRemoveButton.hidden = false;
       setStatus(profileStatus, "Your profile photo could not load. " + friendlyError(error), "error");
+      return false;
     }
   };
 
@@ -311,10 +316,10 @@ if (modal) {
       if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return;
       currentProfile = profile;
       renderProfileFields(user, profile);
-      await loadPrivateAvatar(user, profile, requestId);
+      const avatarLoaded = await loadPrivateAvatar(user, profile, requestId);
       if (requestId === profileLoadCounter && !profile.avatarPath) {
         setStatus(profileStatus, "Your private account is ready.");
-      } else if (requestId === profileLoadCounter && profile.avatarPath) {
+      } else if (requestId === profileLoadCounter && avatarLoaded) {
         setStatus(profileStatus, "Your account and profile photo are loaded.");
       }
     } catch (error) {
