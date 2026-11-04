@@ -36,10 +36,10 @@
             <input name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" required>
           </label>
           <label class="auth-field">Password
-            <input name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" placeholder="At least 8 characters" required>
+            <div class="auth-password-wrap"><input name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" placeholder="At least 8 characters" required><button class="password-visibility" type="button" data-password-toggle="password" aria-label="Show password" title="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" hidden><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 4.1M6.2 6.2C3.5 8.1 2 12 2 12s3.6 7 10 7a10.5 10.5 0 0 0 4-.8"/></svg></button></div>
           </label>
           <label class="auth-field auth-signup-only" hidden>Confirm password
-            <input name="confirmPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Enter your password again">
+            <div class="auth-password-wrap"><input name="confirmPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Enter your password again" ><button class="password-visibility" type="button" data-password-toggle="confirmPassword" aria-label="Show confirmation password" title="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" hidden><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 4.1M6.2 6.2C3.5 8.1 2 12 2 12s3.6 7 10 7a10.5 10.5 0 0 0 4-.8"/></svg></button></div>
           </label>
           <div class="auth-form-meta">
             <button class="auth-text-button" type="button" data-auth-forgot>Forgot password?</button>
@@ -55,7 +55,7 @@
         <p class="eyebrow">ACCOUNT STATUS</p>
         <h2 id="auth-heading-signed">You're signed in.</h2>
         <p class="auth-user-email" data-auth-user-email></p>
-        <p class="auth-subtitle">Your ORVEXA account is active on this device.</p>
+        <p class="auth-subtitle">Your ORVEXA account is active on this device.</p><p class="auth-user-status" data-auth-user-status role="status" aria-live="polite">Signed in.</p>
         <button class="auth-submit" type="button" data-auth-signout>Sign out</button>
       </div>
       <p class="auth-privacy-note">Your password is handled by Firebase Authentication. ORVEXA does not store or log your password.</p>
