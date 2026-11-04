@@ -1,18 +1,195 @@
 document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav){toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');toggle.textContent=open?'×':'☰'});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰'}))}document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());const themeButton=document.querySelector('.theme-toggle');const applyTheme=theme=>{document.body.dataset.theme=theme;if(themeButton){themeButton.textContent=theme==='dark'?'☼':'◐';themeButton.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');themeButton.title=theme==='dark'?'Switch to light theme':'Switch to dark theme'}document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111111':'#ffffff')};const saved='dark';applyTheme(saved);if(themeButton)themeButton.addEventListener('click',()=>{const next=document.body.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('orvexa-theme',next)}catch(e){}});const form=document.querySelector('.contact-form');if(form){form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form);const subject=encodeURIComponent('Website enquiry — '+data.get('name'));const body=encodeURIComponent('Name: '+data.get('name')+'\\nEmail: '+data.get('email')+'\\nBusiness: '+(data.get('business')||'Not provided')+'\\nService: '+data.get('service')+'\\n\\nProject details:\\n'+data.get('message'));window.location.href='mailto:arpansubba775@gmail.com?subject='+subject+'&body='+body})}});
-/* Respect reduced-motion preferences and stop background video when the tab is hidden. */
+/* Smooth hero video playback: preload early, retry after buffering, respect visibility. */
 (()=>{
  const video=document.querySelector('.hero-work-video');
  if(!video)return;
  const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
- const syncPlayback=()=>{
-  if(motion.matches||document.hidden){video.pause();return}
+ let retryTimer=null;
+ const clearRetry=()=>{if(retryTimer){clearTimeout(retryTimer);retryTimer=null}};
+ const tryPlay=()=>{
+  if(motion.matches||document.hidden)return;
+  if(video.readyState<2)return;
   const attempt=video.play();
-  if(attempt&&typeof attempt.catch==='function')attempt.catch(()=>{});
+  if(attempt&&typeof attempt.catch==='function'){
+   attempt.catch(()=>{
+    clearRetry();
+    retryTimer=setTimeout(()=>{
+     if(!document.hidden&&!motion.matches&&video.readyState>=2)tryPlay();
+    },900);
+   });
+  }
  };
+ video.addEventListener('loadeddata',tryPlay);
+ video.addEventListener('canplay',tryPlay);
+ video.addEventListener('playing',()=>{
+  clearRetry();
+  video.classList.remove('video-buffering','video-failed');
+ });
+ video.addEventListener('waiting',()=>video.classList.add('video-buffering'));
+ video.addEventListener('stalled',()=>{
+  clearRetry();
+  retryTimer=setTimeout(tryPlay,1300);
+ });
  video.addEventListener('error',()=>video.classList.add('video-failed'));
+ video.addEventListener('ended',()=>{
+  video.currentTime=0;
+  tryPlay();
+ });
+ const syncPlayback=()=>{
+  if(motion.matches||document.hidden){
+   clearRetry();
+   video.pause();
+   return;
+  }
+  tryPlay();
+ };
  document.addEventListener('visibilitychange',syncPlayback);
  if(typeof motion.addEventListener==='function')motion.addEventListener('change',syncPlayback);
  syncPlayback();
+})();
+
+/* Continuous code typing animation for the ORVEXA workspace preview. */
+(()=>{
+ const code=document.querySelector('[data-code-stream]');
+ const numbers=document.querySelector('[data-code-numbers]');
+ if(!code||!numbers)return;
+ const tabs=[...document.querySelectorAll('.code-tabbar span')];
+ const state=document.querySelector('[data-code-state]');
+ const build=document.querySelector('[data-code-build]');
+ const examples=[
+  {file:0,lines:[
+   '<!doctype html>',
+   '<html lang="en">',
+   '<head>',
+   '  <meta charset="UTF-8">',
+   '  <meta name="viewport" content="width=device-width">',
+   '  <title>ORVEXA Digital</title>',
+   '</head>',
+   '<body>',
+   '  <main class="hero">',
+   '    <h1>Build something better.</h1>',
+   '    <p>Digital experiences that grow.</p>',
+   '  </main>',
+   '</body>',
+   '</html>'
+  ]},
+  {file:1,lines:[
+   ':root {',
+   '  --surface: #111111;',
+   '  --text: #f5f5f5;',
+   '}',
+   '.hero {',
+   '  display: grid;',
+   '  grid-template-columns: 1fr 1fr;',
+   '  align-items: center;',
+   '  min-height: 100vh;',
+   '  background: var(--surface);',
+   '  color: var(--text);',
+   '  gap: 3rem;',
+   '}',
+   '.hero h1 { letter-spacing: -0.04em; }'
+  ]},
+  {file:2,lines:[
+   'const buildWebsite = async () => {',
+   '  const design = await createLayout();',
+   '  const pages = ["home", "services",',
+   '                 "portfolio", "contact"];',
+   '  for (const page of pages) {',
+   '    await renderPage(page, design);',
+   '  }',
+   '  return optimiseForEveryScreen();',
+   '};',
+   '',
+   'buildWebsite().then(() => {',
+   '  console.log("Ready to launch.");',
+   '});'
+  ]}
+ ];
+ let exampleIndex=0,lineIndex=0,charIndex=0,currentLine=null,timer=null,paused=document.hidden;
+ const speed=24;
+ const schedule=delay=>{
+  if(timer)clearTimeout(timer);
+  if(!paused)timer=setTimeout(typeNext,delay);
+ };
+ const setActiveTab=fileIndex=>{
+  tabs.forEach((tab,index)=>tab.classList.toggle('active',index===fileIndex));
+ };
+ const resetExample=()=>{
+  code.replaceChildren();
+  numbers.replaceChildren();
+  currentLine=null;
+  lineIndex=0;
+  charIndex=0;
+  setActiveTab(examples[exampleIndex].file);
+  if(state)state.textContent='WRITING CODE';
+  if(build){build.textContent='BUILD IN PROGRESS';build.classList.remove('is-done')}
+ };
+ const typeNext=()=>{
+  if(paused||document.hidden)return;
+  const example=examples[exampleIndex];
+  if(lineIndex>=example.lines.length){
+   if(state)state.textContent='BUILD SUCCESS';
+   if(build){build.textContent='READY TO PREVIEW';build.classList.add('is-done')}
+   schedule(1500);
+   timer=setTimeout(()=>{
+    exampleIndex=(exampleIndex+1)%examples.length;
+    resetExample();
+    typeNext();
+   },1550);
+   return;
+  }
+  const line=example.lines[lineIndex];
+  if(!currentLine){
+   const number=document.createElement('span');
+   number.textContent=String(lineIndex+1).padStart(2,'0');
+   numbers.append(number);
+   currentLine=document.createElement('span');
+   currentLine.className='code-line '+(
+    line.trim().startsWith('<!--')?'syntax-muted':
+    line.trim().startsWith('<')||line.trim().startsWith('}')?'syntax-tag':
+    line.includes(':')?'syntax-property':''
+   );
+   code.append(currentLine);
+   currentLine.textContent='';
+   currentLine.dataset.line=lineIndex;
+  }
+  charIndex=Math.min(line.length,charIndex+1);
+  currentLine.textContent=line.slice(0,charIndex);
+  const pane=document.querySelector('.code-editor-body');
+  if(pane)pane.scrollTop=pane.scrollHeight;
+  if(charIndex<line.length){
+   schedule(speed);
+  }else{
+   lineIndex++;
+   charIndex=0;
+   currentLine=null;
+   schedule(110);
+  }
+ };
+ const handleVisibility=()=>{
+  paused=document.hidden;
+  if(paused){if(timer)clearTimeout(timer);timer=null}
+  else if(!timer)typeNext();
+ };
+ document.addEventListener('visibilitychange',handleVisibility);
+ const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
+ if(motion.matches){
+  resetExample();
+  examples[0].lines.forEach((line,index)=>{
+   const num=document.createElement('span');
+   num.textContent=String(index+1).padStart(2,'0');
+   numbers.append(num);
+   const row=document.createElement('span');
+   row.className='code-line';
+   row.textContent=line;
+   code.append(row);
+  });
+  if(state)state.textContent='CODE PREVIEW';
+  if(build)build.textContent='READY TO PREVIEW';
+ }else{
+  resetExample();
+  typeNext();
+ }
 })();
 /* Visitor feedback — browser-local until a shared review database is connected. */
 (()=>{
