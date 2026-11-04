@@ -337,3 +337,9 @@ body[data-theme="light"] .hero-coffee-cup{opacity:.95}
  .coffee-steam,.code-live-indicator i,.code-caret{animation:none}
  .hero-coffee-cup{opacity:.6}
 }
+
+
+/* Graceful video buffering fallback: keep the poster/photo visible while code continues */
+.hero-work-video{transition:opacity .45s ease}
+.hero-work-video.video-buffering{opacity:.12}
+.hero-work-video.video-failed{display:none}
