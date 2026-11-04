@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Private profile photo: the customer can access only their own avatar.
+    match /users/{userId}/profile/avatar {
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+
+      // Only image files smaller than 10 MiB are accepted.
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+
+      allow delete: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource == null;
+    }
+
+    // Deny all other file access.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
