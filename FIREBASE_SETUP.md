@@ -10,13 +10,9 @@ The website is hosted on GitHub Pages. GitHub Pages serves static files; Firebas
 4. In **Authentication → Settings → Authorized domains**, add `mobdev-jpg.github.io`.
 5. In **Firestore Database**, create a database. Start in production mode.
 
-## 2. Connect the web app configuration
+## 2. Web app configuration (already connected)
 
-Open `firebase-config.js` in this repository and replace the placeholder values with the Web app values for:
-- `apiKey`
-- `authDomain`
-- `projectId`
-- `appId`
+The Firebase Web app configuration for project `business-bbd02` is already saved in `firebase-config.js` in this repository. No manual edit is needed.
 
 These are Firebase **public web-app configuration values**, not database passwords or admin credentials. Firebase's web SDK requires them in the browser. Do not add a service-account JSON file, Admin SDK private key, database password, or other server secret to this repository.
 
