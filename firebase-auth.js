@@ -244,7 +244,7 @@ if (modal) {
       "auth/network-request-failed": "The request could not reach Firebase. Check your connection and browser extensions.",
       "permission-denied": "Firestore denied this profile action. Publish the latest firestore.rules file from the repository.",
       "unavailable": "Firestore is temporarily unavailable. Try again in a moment.",
-      "resource-exhausted": "Firestore's free storage or document-write quota has been reached. Try again later or reduce stored profile data.",
+      "resource-exhausted": "Firestore's free data or document-write quota has been reached. Try again later or reduce stored profile data.",
       "invalid-argument": "Firestore rejected this profile update. The compressed image may still be too large.",
       "failed-precondition": "Firestore needs a project setup change before it can save this profile."
     };
