@@ -579,3 +579,9 @@ body[data-theme="light"] .service-card,body[data-theme="light"] .content-card{bo
 @media(max-width:800px){.process-grid{gap:10px}.process-step,.process-step:nth-child(even){transform:none}.process-step:last-child{border-right:1px solid #555}}
 @media(max-width:560px){.process-step{border-right:1px solid #555!important}.process-step:nth-child(even):hover{transform:translateY(-4px)}}
 @media(prefers-reduced-motion:reduce){.outcome-card,.process-step,.service-card{transition:none}}
+
+
+/* Five-card service row on wide screens; centred final card on tablets */
+@media(min-width:901px){.service-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.service-card{padding:21px 16px}.service-card h3{font-size:16px}.service-card p{font-size:11px}.service-details{font-size:9px}}
+@media(min-width:681px) and (max-width:900px){.service-grid>.service-card:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 8px)}}
+@media(max-width:680px){.service-grid>.service-card:last-child:nth-child(odd){grid-column:auto;width:auto}}
