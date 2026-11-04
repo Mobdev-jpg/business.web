@@ -45,11 +45,115 @@
         <p class="auth-message" data-auth-message role="status" aria-live="polite">Connect Firebase to activate accounts.</p>
       </div>
       <div class="auth-user-panel" data-auth-user-panel hidden>
-        <p class="eyebrow">ACCOUNT STATUS</p>
-        <h2 id="auth-heading-signed">You're signed in.</h2>
-        <p class="auth-user-email" data-auth-user-email></p>
-        <p class="auth-subtitle">Your ORVEXA account is active on this device.</p><p class="auth-user-status" data-auth-user-status role="status" aria-live="polite">Signed in.</p>
-        <button class="auth-submit" type="button" data-auth-signout>Sign out</button>
+        <div class="profile-layout">
+          <aside class="profile-sidebar">
+            <div class="profile-side-brand"><span class="brand-mark">V</span><span>ORVEXA <b>CLIENT</b></span></div>
+            <div class="profile-avatar-block">
+              <div class="profile-avatar-stage">
+                <div class="profile-avatar-fallback" data-profile-avatar-fallback>OD</div>
+                <img class="profile-avatar-image" data-profile-avatar alt="Your profile photo" hidden>
+                <span class="profile-avatar-camera" aria-hidden="true">+</span>
+              </div>
+              <button class="profile-photo-button" type="button" data-profile-pick>Upload photo</button>
+              <input class="profile-file-input" id="profile-avatar-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+              <p class="profile-photo-hint">JPG, PNG or WEBP<br>Under 10 MB</p>
+              <button class="profile-remove-photo" type="button" data-profile-remove hidden>Remove photo</button>
+            </div>
+            <div class="profile-side-identity">
+              <strong data-profile-side-name>Client account</strong>
+              <span data-profile-side-email></span>
+              <small><i></i> CLIENT ACCOUNT</small>
+            </div>
+            <nav class="profile-nav" aria-label="Profile sections">
+              <button type="button" class="is-active" data-profile-tab="overview"><span>◫</span> Overview</button>
+              <button type="button" data-profile-tab="details"><span>◉</span> Personal details</button>
+              <button type="button" data-profile-tab="security"><span>⌑</span> Security</button>
+            </nav>
+            <button class="profile-signout" type="button" data-auth-signout><span>↪</span> Sign out</button>
+            <p class="profile-sidebar-foot">ORVEXA DIGITAL · CLIENT SPACE</p>
+          </aside>
+
+          <div class="profile-workspace">
+            <div class="profile-workspace-top">
+              <div><span class="profile-breadcrumb">CLIENT AREA</span><span class="profile-breadcrumb-separator">/</span><span data-profile-current-section>Overview</span></div>
+              <span class="profile-secure-label"><i></i> PRIVATE ACCOUNT</span>
+            </div>
+
+            <section class="profile-view" data-profile-view="overview">
+              <div class="profile-welcome">
+                <div>
+                  <p class="eyebrow">YOUR ORVEXA SPACE</p>
+                  <h2>Welcome back, <span data-profile-greeting>there</span>.</h2>
+                  <p>Manage your account details and keep your project conversations connected to one place.</p>
+                </div>
+                <div class="profile-welcome-avatar" data-profile-mini-avatar>OD</div>
+              </div>
+              <div class="profile-stat-grid">
+                <article class="profile-stat-card"><span>ACCOUNT</span><strong>Active</strong><small>Your client access is ready</small></article>
+                <article class="profile-stat-card"><span>MEMBER SINCE</span><strong data-profile-member-since>—</strong><small>Your account creation date</small></article>
+                <article class="profile-stat-card"><span>EMAIL STATUS</span><strong data-profile-verification>Unverified</strong><small data-profile-verification-note>Verify your email for account security</small></article>
+              </div>
+              <article class="profile-project-card">
+                <div class="profile-project-symbol">↗</div>
+                <div class="profile-project-copy">
+                  <p class="eyebrow">YOUR NEXT STEP</p>
+                  <h3>Have a project in mind?</h3>
+                  <p>Tell us what you want to build. Our team can discuss your requirements, timeline and the right digital solution.</p>
+                  <a class="profile-action-link" href="contact.html">Start a project enquiry <span>↗</span></a>
+                </div>
+              </article>
+              <div class="profile-quick-links">
+                <a href="services.html"><span>01</span><strong>Explore services</strong><small>See what ORVEXA can build</small><b>↗</b></a>
+                <a href="pricing.html"><span>02</span><strong>View packages</strong><small>Explore starting prices</small><b>↗</b></a>
+              </div>
+              <p class="profile-status" data-profile-status role="status" aria-live="polite">Your account is signed in.</p>
+            </section>
+
+            <section class="profile-view" data-profile-view="details" hidden>
+              <div class="profile-view-heading">
+                <p class="eyebrow">ACCOUNT INFORMATION</p>
+                <h2>Personal details</h2>
+                <p>Keep your profile information up to date. Only you can view and edit this account profile.</p>
+              </div>
+              <form class="profile-details-form" data-profile-form>
+                <div class="profile-form-grid">
+                  <label>Full name<input type="text" name="displayName" data-profile-name maxlength="80" autocomplete="name" placeholder="Your full name" required></label>
+                  <label>Email address<input type="email" name="email" data-profile-email-input readonly></label>
+                  <label>Business or organisation <span>Optional</span><input type="text" name="businessName" data-profile-business maxlength="120" autocomplete="organization" placeholder="Your business name"></label>
+                  <label class="profile-bio-field">About you <span>Optional</span><textarea name="bio" data-profile-bio rows="4" maxlength="280" placeholder="A little about you or your business..."></textarea><small>Maximum 280 characters.</small></label>
+                </div>
+                <div class="profile-form-footer">
+                  <span class="profile-status" data-profile-form-status role="status" aria-live="polite"></span>
+                  <button class="profile-save-button" type="submit" data-profile-save>Save changes <span>↗</span></button>
+                </div>
+              </form>
+            </section>
+
+            <section class="profile-view" data-profile-view="security" hidden>
+              <div class="profile-view-heading">
+                <p class="eyebrow">ACCOUNT PROTECTION</p>
+                <h2>Security settings</h2>
+                <p>Manage your sign-in security and email verification.</p>
+              </div>
+              <article class="profile-security-card">
+                <div class="profile-security-icon">✉</div>
+                <div><strong>Email verification</strong><p data-profile-security-email>Your email verification status will appear here.</p></div>
+                <span class="profile-security-state" data-profile-security-badge>Pending</span>
+                <button type="button" class="profile-outline-button" data-profile-verify>Send verification</button>
+              </article>
+              <article class="profile-security-card">
+                <div class="profile-security-icon">⌑</div>
+                <div><strong>Password</strong><p>Send a secure password reset link to your registered email address.</p></div>
+                <button type="button" class="profile-outline-button" data-profile-reset>Send reset link</button>
+              </article>
+              <article class="profile-security-note">
+                <strong>Your credentials stay protected.</strong>
+                <p>Passwords are managed by Firebase Authentication. ORVEXA does not store your password in your profile database.</p>
+              </article>
+              <p class="profile-status" data-profile-security-status role="status" aria-live="polite"></p>
+            </section>
+          </div>
+        </div>
       </div>
       <p class="auth-privacy-note">Your password is handled by Firebase Authentication. ORVEXA does not store or log your password.</p>
     </div>
