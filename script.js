@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySel
   if(!reviews.length){
    const empty=document.createElement('div');
    empty.className='reviews-empty';
-   empty.innerHTML='<div class="review-stars" aria-hidden="true">★★★★★</div><h3>Be the first to leave a review.</h3><p>Worked with ORVEXA DIGITAL? Share your experience here.</p><button class="button button-ghost" type="button" data-review-open>Write the first review ↗</button>';
+   empty.innerHTML='<div class="review-stars" aria-hidden="true">★★★★★</div><h3>Be the first to leave a review.</h3><p>Worked with ORVEXA DIGITAL? Use the Write a review button above to share your experience.</p>';
    list.append(empty);
    return;
   }
