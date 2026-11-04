@@ -264,3 +264,14 @@ body[data-theme="light"] .outcome-card p,body[data-theme="light"] .process-step 
 .auth-privacy-note{border-top:1px solid #444;margin:20px 0 0;padding-top:14px;color:#888;font-size:10px;line-height:1.65}
 @media(max-width:760px){.auth-backdrop{padding:12px}.auth-shell{grid-template-columns:1fr;max-width:510px;max-height:calc(100dvh - 24px);border-radius:17px}.auth-visual{display:none}.auth-panel{padding:56px 25px 23px}.auth-brand{margin-bottom:25px}.auth-panel h2{font-size:30px}}
 @media(prefers-reduced-motion:no-preference){.auth-shell{animation:auth-rise .22s ease-out}@keyframes auth-rise{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}}
+
+
+/* Password visibility controls */
+.auth-password-wrap{position:relative;display:block;width:100%}
+.auth-password-wrap input{padding-right:52px!important}
+.password-visibility{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:34px;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;color:#bdbdbd;cursor:pointer}
+.password-visibility:hover{background:#292929;color:#fff;border-color:#555}
+.password-visibility svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.password-visibility svg[hidden]{display:none}
+.auth-user-status{margin:12px 0 0;padding:11px 12px;border:1px solid #555;border-radius:8px;color:#d6d6d6;background:#202020;font-size:11px;line-height:1.6}
+@media(max-width:760px){.password-visibility{right:6px}}
