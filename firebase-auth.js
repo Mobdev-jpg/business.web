@@ -278,6 +278,19 @@ if (modal) {
         createdAt: serverTimestamp()
       });
       snapshot = await getDoc(reference);
+    } else {
+      // Migrate profile documents created by the earlier login-only version.
+      const existing = snapshot.data() || {};
+      const migration = {};
+      if (typeof existing.businessName !== "string") migration.businessName = "";
+      if (typeof existing.bio !== "string") migration.bio = "";
+      if (typeof existing.avatarPath !== "string") migration.avatarPath = "";
+      if (typeof existing.avatarType !== "string") migration.avatarType = "";
+      if (Object.keys(migration).length) {
+        migration.updatedAt = serverTimestamp();
+        await updateDoc(reference, migration);
+        snapshot = await getDoc(reference);
+      }
     }
     return snapshot.data() || {};
   };
