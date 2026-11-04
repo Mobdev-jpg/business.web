@@ -232,3 +232,34 @@ body[data-theme="light"] .hero-work-video{filter:grayscale(1) brightness(.88)}
 body[data-theme="light"] .hero-video-shade{background:linear-gradient(90deg,rgba(255,255,255,.84) 0%,rgba(255,255,255,.72) 47%,rgba(255,255,255,.56) 100%),linear-gradient(0deg,rgba(255,255,255,.18),transparent 46%)}
 @media(max-width:680px){.hero-work-video{object-position:55% center}.hero-video-shade{background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.48))}}
 @media(prefers-reduced-motion:reduce){.hero-work-video{display:none}.browser-card,.float-tag{transition:none}}
+
+
+/* Richer cinematic backdrop for the live-workspace hero */
+.hero{background-color:#090909;background-image:radial-gradient(ellipse at 76% 40%,rgba(255,255,255,.12),transparent 33%),radial-gradient(ellipse at 48% 92%,rgba(170,170,170,.08),transparent 42%),linear-gradient(115deg,#090909 0%,#171717 52%,#090909 100%)}
+.hero-glow{position:absolute;z-index:1;pointer-events:none;width:min(58vw,760px);height:min(58vw,760px);right:1%;top:2%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(210,210,210,.08) 34%,rgba(255,255,255,.025) 52%,transparent 72%);filter:blur(12px)}
+.hero:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:54px 54px;opacity:.42;mask-image:linear-gradient(90deg,transparent 3%,rgba(0,0,0,.45) 34%,#000 100%)}
+.hero-video-shade{background:linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.74) 38%,rgba(0,0,0,.52) 100%),linear-gradient(0deg,rgba(0,0,0,.5),transparent 38%,rgba(0,0,0,.28))}
+.hero-art{filter:drop-shadow(0 22px 48px rgba(0,0,0,.72))}
+.float-tag{display:flex;align-items:center;gap:11px;min-width:224px;padding:11px 15px;border:1px solid rgba(255,255,255,.48);border-radius:12px;background:linear-gradient(145deg,rgba(43,43,43,.96),rgba(18,18,18,.94));color:#f7f7f7;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 15px 40px rgba(0,0,0,.48)}
+.float-tag-icon{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;border:1px solid #777;border-radius:9px;background:linear-gradient(145deg,#505050,#202020);color:#fff;font-size:16px}
+.float-tag-copy{display:grid;gap:2px;white-space:nowrap}
+.float-tag-copy strong{font:700 11px Manrope,sans-serif;letter-spacing:.05px;color:#fff}
+.float-tag-copy small{font:500 9px 'DM Sans',sans-serif;color:#c3c3c3}
+.tag-top{top:34px;right:-16px}
+.tag-bottom{bottom:26px;left:-15px}
+@keyframes feature-card-float{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ .tag-top{animation:feature-card-float 6s ease-in-out infinite}
+ .tag-bottom{animation:feature-card-float 7s ease-in-out -2s infinite}
+ .float-tag:hover{animation-play-state:paused;transform:translateY(-8px) scale(1.045);background:linear-gradient(145deg,rgba(64,64,64,.98),rgba(23,23,23,.98));border-color:#fff;box-shadow:0 22px 50px rgba(0,0,0,.62),0 0 25px rgba(255,255,255,.1)}
+}
+body[data-theme="light"] .hero{background-color:#f4f4f4;background-image:radial-gradient(ellipse at 76% 40%,rgba(0,0,0,.09),transparent 34%),linear-gradient(115deg,#ededed 0%,#fff 52%,#e8e8e8 100%)}
+body[data-theme="light"] .hero-glow{background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,.4) 48%,transparent 72%)}
+body[data-theme="light"] .hero:after{background-image:linear-gradient(rgba(0,0,0,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.055) 1px,transparent 1px)}
+body[data-theme="light"] .hero-video-shade{background:linear-gradient(90deg,rgba(255,255,255,.82) 0%,rgba(255,255,255,.72) 42%,rgba(255,255,255,.48) 100%),linear-gradient(0deg,rgba(255,255,255,.24),transparent 44%)}
+body[data-theme="light"] .float-tag{background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(235,235,235,.95));border-color:#777;color:#111;box-shadow:0 14px 34px rgba(0,0,0,.2)}
+body[data-theme="light"] .float-tag-icon{background:linear-gradient(145deg,#444,#171717);color:#fff;border-color:#777}
+body[data-theme="light"] .float-tag-copy strong{color:#111}
+body[data-theme="light"] .float-tag-copy small{color:#555}
+@media(max-width:680px){.hero-glow{width:100vw;height:100vw;right:-32%;top:4%}.hero:after{background-size:42px 42px;opacity:.26}.float-tag{min-width:0;padding:8px 10px;gap:8px}.float-tag-icon{flex-basis:26px;width:26px;height:26px;font-size:13px}.float-tag-copy strong{font-size:9px}.float-tag-copy small{font-size:8px}.tag-top{top:3px;right:0}.tag-bottom{bottom:5px;left:0}}
+@media(prefers-reduced-motion:reduce){.tag-top,.tag-bottom{animation:none}}
