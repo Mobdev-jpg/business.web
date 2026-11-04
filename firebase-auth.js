@@ -8,9 +8,6 @@ import {
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadBytes, getBytes, deleteObject
-} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-storage.js";
 
 const modal = document.querySelector("#auth-modal");
 
@@ -48,15 +45,14 @@ if (modal) {
   const profileSecurityStatus = document.querySelector("[data-profile-security-status]");
   const profileCurrentSection = document.querySelector("[data-profile-current-section]");
   const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
+  const MAX_STORED_AVATAR_CHARS = 600000;
   const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
   let mode = "signin";
   let auth = null;
   let db = null;
-  let storage = null;
   let currentUser = null;
   let currentProfile = null;
-  let avatarObjectUrl = null;
   let profileLoadCounter = 0;
 
   let configured = Boolean(
@@ -86,13 +82,6 @@ if (modal) {
     return words.slice(0, 2).map(word => word[0].toUpperCase()).join("") || "OD";
   };
 
-  const revokeAvatarUrl = () => {
-    if (avatarObjectUrl) {
-      URL.revokeObjectURL(avatarObjectUrl);
-      avatarObjectUrl = null;
-    }
-  };
-
   const showAvatarFallback = (user, profile = {}) => {
     const initials = initialsFor(displayNameFor(user, profile));
     if (profileFallback) {
@@ -106,17 +95,19 @@ if (modal) {
     }
   };
 
-  const renderAvatarFromBytes = (bytes, mimeType, user, profile = {}) => {
-    revokeAvatarUrl();
-    avatarObjectUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType || "image/jpeg" }));
+  const renderAvatarFromData = (data, user, profile = {}) => {
+    if (typeof data !== "string" || data.length > MAX_STORED_AVATAR_CHARS ||
+        !data.startsWith("data:image/jpeg;base64,")) {
+      showAvatarFallback(user, profile);
+      return false;
+    }
     if (profileAvatar) {
-      profileAvatar.src = avatarObjectUrl;
+      profileAvatar.src = data;
       profileAvatar.hidden = false;
     }
     if (profileFallback) profileFallback.hidden = true;
-    if (profileMiniAvatar) {
-      profileMiniAvatar.textContent = initialsFor(displayNameFor(user, profile));
-    }
+    if (profileMiniAvatar) profileMiniAvatar.textContent = initialsFor(displayNameFor(user, profile));
+    return true;
   };
 
   const renderProfileFields = (user, profile) => {
@@ -147,8 +138,8 @@ if (modal) {
       el.classList.toggle("is-verified", verified);
     });
 
-    showAvatarFallback(user, profile);
-    if (profileRemoveButton) profileRemoveButton.hidden = !profile.avatarPath;
+    if (!renderAvatarFromData(profile.avatarData, user, profile)) showAvatarFallback(user, profile);
+    if (profileRemoveButton) profileRemoveButton.hidden = !profile.avatarData;
   };
 
   const setProfileView = (viewName) => {
@@ -253,10 +244,9 @@ if (modal) {
       "auth/network-request-failed": "The request could not reach Firebase. Check your connection and browser extensions.",
       "permission-denied": "Firestore denied this profile action. Publish the latest firestore.rules file from the repository.",
       "unavailable": "Firestore is temporarily unavailable. Try again in a moment.",
-      "storage/unauthorized": "Storage denied access. Confirm that storage.rules is published and that you are signed in.",
-      "storage/bucket-not-found": "The Firebase Storage bucket is not ready. Create the Storage bucket in Firebase Console first.",
-      "storage/quota-exceeded": "The Storage quota was exceeded. Check the project's billing and usage.",
-      "storage/unknown": "Firebase Storage returned an access error. On the Spark plan, Firebase Storage is unavailable; it requires the Blaze billing plan."
+      "resource-exhausted": "Firestore's free storage or document-write quota has been reached. Try again later or reduce stored profile data.",
+      "invalid-argument": "Firestore rejected this profile update. The compressed image may still be too large.",
+      "failed-precondition": "Firestore needs a project setup change before it can save this profile."
     };
     return (errors[code] || "Firebase could not complete the request.") + " (Error code: " + code + ")";
   };
@@ -273,7 +263,7 @@ if (modal) {
         email: user.email || "",
         businessName: "",
         bio: "",
-        avatarPath: "",
+        avatarData: "",
         avatarType: "",
         createdAt: serverTimestamp()
       });
@@ -284,8 +274,10 @@ if (modal) {
       const migration = {};
       if (typeof existing.businessName !== "string") migration.businessName = "";
       if (typeof existing.bio !== "string") migration.bio = "";
-      if (typeof existing.avatarPath !== "string") migration.avatarPath = "";
+      if (typeof existing.avatarData !== "string") migration.avatarData = "";
       if (typeof existing.avatarType !== "string") migration.avatarType = "";
+      // Old Storage paths are no longer used by the free Firestore-based avatar flow.
+      if (typeof existing.avatarPath === "string" && existing.avatarPath) migration.avatarPath = "";
       if (Object.keys(migration).length) {
         migration.updatedAt = serverTimestamp();
         await updateDoc(reference, migration);
@@ -296,28 +288,18 @@ if (modal) {
   };
 
   const loadPrivateAvatar = async (user, profile, requestId) => {
-    revokeAvatarUrl();
-    showAvatarFallback(user, profile);
-    if (!profile.avatarPath) {
+    if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return false;
+    if (!profile.avatarData) {
+      showAvatarFallback(user, profile);
       if (profileRemoveButton) profileRemoveButton.hidden = true;
       return true;
     }
-    if (!storage) {
-      if (profileRemoveButton) profileRemoveButton.hidden = false;
-      return false;
+    const rendered = renderAvatarFromData(profile.avatarData, user, profile);
+    if (profileRemoveButton) profileRemoveButton.hidden = !rendered;
+    if (!rendered) {
+      setStatus(profileStatus, "This saved profile photo is not in the supported format. Upload a new photo.", "error");
     }
-    try {
-      const bytes = await getBytes(storageRef(storage, profile.avatarPath), MAX_AVATAR_BYTES);
-      if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return;
-      renderAvatarFromBytes(bytes, profile.avatarType || "image/jpeg", user, profile);
-      if (profileRemoveButton) profileRemoveButton.hidden = false;
-      return true;
-    } catch (error) {
-      console.error("ORVEXA private avatar load failed:", error?.code || error);
-      if (profileRemoveButton) profileRemoveButton.hidden = false;
-      setStatus(profileStatus, "Your profile photo could not load. " + friendlyError(error), "error");
-      return false;
-    }
+    return rendered;
   };
 
   const loadAccountProfile = async (user) => {
@@ -330,7 +312,7 @@ if (modal) {
       currentProfile = profile;
       renderProfileFields(user, profile);
       const avatarLoaded = await loadPrivateAvatar(user, profile, requestId);
-      if (requestId === profileLoadCounter && !profile.avatarPath) {
+      if (requestId === profileLoadCounter && !profile.avatarData) {
         setStatus(profileStatus, "Your private account is ready.");
       } else if (requestId === profileLoadCounter && avatarLoaded) {
         setStatus(profileStatus, "Your account and profile photo are loaded.");
@@ -366,7 +348,6 @@ if (modal) {
       const app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
-      storage = getStorage(app);
 
       onAuthStateChanged(auth, async user => {
         currentUser = user || null;
@@ -381,7 +362,11 @@ if (modal) {
         } else {
           profileLoadCounter++;
           currentProfile = null;
-          revokeAvatarUrl();
+          if (profileAvatar) {
+            profileAvatar.hidden = true;
+            profileAvatar.removeAttribute("src");
+          }
+          if (profileFallback) profileFallback.hidden = false;
           setStatus(profileStatus, "");
           setStatus(profileFormStatus, "");
           setStatus(profileSecurityStatus, "");
@@ -503,6 +488,50 @@ if (modal) {
     });
   }
 
+  const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("The image could not be read by this browser."));
+    reader.readAsDataURL(blob);
+  });
+
+  const canvasToJpeg = (canvas, quality) => new Promise(resolve => {
+    canvas.toBlob(resolve, "image/jpeg", quality);
+  });
+
+  const compressProfilePhoto = async (file) => {
+    const bitmap = await createImageBitmap(file);
+    try {
+      const sizes = [640, 560, 480, 400, 320, 256];
+      const qualities = [0.82, 0.72, 0.62, 0.52, 0.42, 0.34];
+      for (const maxSide of sizes) {
+        const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+        const width = Math.max(1, Math.round(bitmap.width * scale));
+        const height = Math.max(1, Math.round(bitmap.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d", { alpha: false });
+        if (!context) throw new Error("This browser cannot process the selected image.");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, width, height);
+        context.drawImage(bitmap, 0, 0, width, height);
+
+        for (const quality of qualities) {
+          const blob = await canvasToJpeg(canvas, quality);
+          if (!blob) continue;
+          const dataUrl = await blobToDataUrl(blob);
+          if (dataUrl.length <= MAX_STORED_AVATAR_CHARS) {
+            return { dataUrl, type: "image/jpeg" };
+          }
+        }
+      }
+    } finally {
+      bitmap.close?.();
+    }
+    throw new Error("This image could not be compressed small enough. Choose a smaller or simpler picture.");
+  };
+
   if (profilePickButton && profileFileInput) {
     profilePickButton.addEventListener("click", () => profileFileInput.click());
     profileFileInput.addEventListener("change", async () => {
@@ -517,34 +546,38 @@ if (modal) {
         setStatus(profileStatus, "Choose an image smaller than 10 MB.", "error");
         return;
       }
-      if (!currentUser || !storage || !db) {
-        setStatus(profileStatus, "Sign in and make sure Firebase Storage is configured before uploading.", "error");
+      if (!currentUser || !db) {
+        setStatus(profileStatus, "Sign in to save your profile photo.", "error");
         return;
       }
 
       profilePickButton.disabled = true;
-      profilePickButton.textContent = "Uploading…";
-      setStatus(profileStatus, "Uploading your private profile photo…");
+      profilePickButton.textContent = "Processing…";
+      setStatus(profileStatus, "Compressing your photo for secure, no-Storage saving…");
       try {
+        const compressed = await compressProfilePhoto(file);
         await ensureUserProfile(currentUser);
-        const path = "users/" + currentUser.uid + "/profile/avatar";
-        await uploadBytes(storageRef(storage, path), file, {
-          contentType: file.type,
-          cacheControl: "private, max-age=3600"
-        });
         await updateDoc(profileReference(currentUser), {
-          avatarPath: path,
-          avatarType: file.type,
+          avatarData: compressed.dataUrl,
+          avatarType: compressed.type,
           updatedAt: serverTimestamp()
         });
-        currentProfile = { ...(currentProfile || {}), avatarPath: path, avatarType: file.type };
-        const bytes = await getBytes(storageRef(storage, path), MAX_AVATAR_BYTES);
-        renderAvatarFromBytes(bytes, file.type, currentUser, currentProfile);
+        currentProfile = {
+          ...(currentProfile || {}),
+          avatarData: compressed.dataUrl,
+          avatarType: compressed.type,
+          avatarPath: ""
+        };
+        renderAvatarFromData(compressed.dataUrl, currentUser, currentProfile);
         if (profileRemoveButton) profileRemoveButton.hidden = false;
-        setStatus(profileStatus, "Your profile photo has been uploaded.", "success");
+        setStatus(
+          profileStatus,
+          "Profile photo saved privately to your account (" + Math.round(compressed.dataUrl.length / 1024) + " KB compressed).",
+          "success"
+        );
       } catch (error) {
-        console.error("ORVEXA avatar upload failed:", error?.code || error);
-        setStatus(profileStatus, friendlyError(error), "error");
+        console.error("ORVEXA Firestore avatar save failed:", error?.code || error?.message || error);
+        setStatus(profileStatus, error?.code ? friendlyError(error) : error.message, "error");
       } finally {
         profilePickButton.disabled = false;
         profilePickButton.textContent = "Change photo";
@@ -554,19 +587,18 @@ if (modal) {
 
   if (profileRemoveButton) {
     profileRemoveButton.addEventListener("click", async () => {
-      if (!currentUser || !currentProfile?.avatarPath || !storage || !db) return;
+      if (!currentUser || !currentProfile?.avatarData || !db) return;
       profileRemoveButton.disabled = true;
       setStatus(profileStatus, "Removing your profile photo…");
       try {
-        await deleteObject(storageRef(storage, currentProfile.avatarPath));
         await updateDoc(profileReference(currentUser), {
-          avatarPath: "",
+          avatarData: "",
           avatarType: "",
           updatedAt: serverTimestamp()
         });
-        currentProfile.avatarPath = "";
+        currentProfile.avatarData = "";
         currentProfile.avatarType = "";
-        revokeAvatarUrl();
+        currentProfile.avatarPath = "";
         showAvatarFallback(currentUser, currentProfile);
         profileRemoveButton.hidden = true;
         setStatus(profileStatus, "Your profile photo has been removed.", "success");
