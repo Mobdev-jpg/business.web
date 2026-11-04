@@ -648,3 +648,12 @@ body[data-theme="light"] .service-social-process{background:linear-gradient(135d
  .website-plan-bridge{gap:7px;font-size:7px}
 }
 @media(prefers-reduced-motion:reduce){.service-track-link{transition:none}}
+
+
+/* Horizontal divider for website-only pricing */
+.website-pricing-divider{display:flex;align-items:center;gap:14px;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid #666;color:#aaa;font-size:9px;font-weight:700;letter-spacing:1.7px}
+.website-pricing-divider i{height:1px;flex:1;background:#666}
+.website-pricing-divider b{display:grid;place-items:center;width:28px;height:28px;border:1px solid #777;border-radius:50%;color:#eee;font-size:9px}
+body[data-theme="light"] .website-pricing-divider{color:#555;border-color:#bbb}
+body[data-theme="light"] .website-pricing-divider i{background:#aaa}
+body[data-theme="light"] .website-pricing-divider b{border-color:#777;color:#222}
