@@ -159,7 +159,10 @@ document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySel
   charIndex=Math.min(line.length,charIndex+1);
   currentLine.textContent=line.slice(0,charIndex);
   const pane=document.querySelector('.code-editor-body');
-  if(pane)pane.scrollTop=pane.scrollHeight;
+  if(pane){
+   pane.scrollTop=pane.scrollHeight;
+   numbers.scrollTop=pane.scrollTop;
+  }
   if(charIndex<line.length){
    schedule(speed);
   }else{
