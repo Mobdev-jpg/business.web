@@ -275,8 +275,9 @@ if (modal) {
       if (typeof existing.businessName !== "string") migration.businessName = "";
       if (typeof existing.bio !== "string") migration.bio = "";
       if (typeof existing.avatarData !== "string") migration.avatarData = "";
+      if (existing.avatarType !== "" && existing.avatarType !== "image/jpeg") migration.avatarType = "";
       if (typeof existing.avatarType !== "string") migration.avatarType = "";
-      // Old Storage paths are no longer used by the free Firestore-based avatar flow.
+      // Old Storage paths and non-JPEG avatars are no longer used.
       if (typeof existing.avatarPath === "string" && existing.avatarPath) migration.avatarPath = "";
       if (Object.keys(migration).length) {
         migration.updatedAt = serverTimestamp();
