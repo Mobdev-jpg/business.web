@@ -82,10 +82,15 @@ if (modal) {
       "auth/too-many-requests": "Too many attempts. Please try again later.",
       "auth/popup-closed-by-user": "The Google sign-in window was closed.",
       "auth/popup-blocked": "Allow pop-ups for this site and try again.",
-      "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase yet.",
-      "auth/network-request-failed": "Network error. Check your connection and retry."
+      "auth/operation-not-allowed": "Email/Password sign-in is not enabled. In Firebase, open Authentication → Sign-in method and enable Email/Password.",
+      "auth/unauthorized-domain": "This website domain is not authorized. In Firebase, open Authentication → Settings → Authorized domains and add mobdev-jpg.github.io.",
+      "auth/configuration-not-found": "Firebase Authentication is not configured for this project. Enable the Email/Password provider in the Firebase Console.",
+      "auth/api-key-not-valid": "The Firebase web API key is invalid. Check the web app configuration in firebase-config.js.",
+      "auth/invalid-api-key": "The Firebase web API key is invalid. Check the web app configuration in firebase-config.js.",
+      "auth/network-request-failed": "Network error. Check your connection and retry.",
+      "permission-denied": "Firebase Authentication may have created the account, but Firestore blocked the profile save. Publish the ORVEXA Firestore security rules."
     };
-    return errors[error?.code] || "We could not complete that request. Check your details and try again.";
+    return errors[error?.code] || "Firebase error: " + (error?.code || error?.message || "unknown") + ". Share this error code (never your password) so we can diagnose it.";
   };
   const ensureProfile = async (user, displayName = "") => {
     const reference = doc(db, "users", user.uid);
