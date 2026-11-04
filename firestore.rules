@@ -7,11 +7,11 @@ service cloud.firestore {
         && request.auth.uid == userId
         && request.resource.data.keys().hasOnly([
           'displayName', 'email', 'businessName', 'bio',
-          'avatarPath', 'avatarType', 'createdAt'
+          'avatarData', 'avatarType', 'createdAt'
         ])
         && request.resource.data.keys().hasAll([
           'displayName', 'email', 'businessName', 'bio',
-          'avatarPath', 'avatarType', 'createdAt'
+          'avatarData', 'avatarType', 'createdAt'
         ])
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() <= 80
@@ -20,7 +20,7 @@ service cloud.firestore {
         && request.resource.data.businessName.size() <= 120
         && request.resource.data.bio is string
         && request.resource.data.bio.size() <= 280
-        && request.resource.data.avatarPath == ''
+        && request.resource.data.avatarData == ''
         && request.resource.data.avatarType == ''
         && request.resource.data.createdAt == request.time;
 
@@ -28,12 +28,12 @@ service cloud.firestore {
       allow read: if request.auth != null
         && request.auth.uid == userId;
 
-      // A customer may edit only their own profile fields.
+      // Only the owner may update their own supported profile fields.
       allow update: if request.auth != null
         && request.auth.uid == userId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'displayName', 'businessName', 'bio',
-          'avatarPath', 'avatarType', 'updatedAt'
+          'avatarData', 'avatarType', 'avatarPath', 'updatedAt'
         ])
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() <= 80
@@ -41,15 +41,20 @@ service cloud.firestore {
         && request.resource.data.businessName.size() <= 120
         && request.resource.data.bio is string
         && request.resource.data.bio.size() <= 280
-        && request.resource.data.avatarPath is string
+        && request.resource.data.avatarData is string
+        && request.resource.data.avatarData.size() <= 600000
         && (
-          request.resource.data.avatarPath == ''
-          || request.resource.data.avatarPath == 'users/' + userId + '/profile/avatar'
+          request.resource.data.avatarData == ''
+          || request.resource.data.avatarData.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')
         )
         && request.resource.data.avatarType is string
         && (
           request.resource.data.avatarType == ''
-          || request.resource.data.avatarType.matches('image/(jpeg|png|webp)')
+          || request.resource.data.avatarType == 'image/jpeg'
+        )
+        && (
+          !('avatarPath' in request.resource.data)
+          || request.resource.data.avatarPath == ''
         )
         && request.resource.data.updatedAt == request.time;
 
@@ -57,7 +62,7 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // Deny access to every other collection by default.
+    // Deny all other collections by default.
     match /{document=**} {
       allow read, write: if false;
     }
