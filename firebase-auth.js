@@ -1,4 +1,4 @@
-import { firebaseConfig } from "./firebase-config.js?v=20261104-2";
+import { firebaseConfig } from "./firebase-config.js?v=20261104-profile";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
@@ -6,8 +6,11 @@ import {
   GoogleAuthProvider, signInWithPopup, updateProfile
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getBytes, deleteObject
+} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-storage.js";
 
 const modal = document.querySelector("#auth-modal");
 
@@ -24,20 +27,44 @@ if (modal) {
   const forgotButton = document.querySelector("[data-auth-forgot]");
   const title = document.querySelector("[data-auth-title]");
   const subtitle = document.querySelector("[data-auth-subtitle]");
-  const emailView = document.querySelector("[data-auth-user-email]");
-  const accountStatus = document.querySelector("[data-auth-user-status]");
   const closeButtons = document.querySelectorAll("[data-auth-close]");
   const signOutButton = document.querySelector("[data-auth-signout]");
+  const profileTabs = [...document.querySelectorAll("[data-profile-tab]")];
+  const profileViews = [...document.querySelectorAll("[data-profile-view]")];
+  const profileName = document.querySelector("[data-profile-name]");
+  const profileEmail = document.querySelector("[data-profile-email-input]");
+  const profileBusiness = document.querySelector("[data-profile-business]");
+  const profileBio = document.querySelector("[data-profile-bio]");
+  const profileForm = document.querySelector("[data-profile-form]");
+  const profileSaveButton = document.querySelector("[data-profile-save]");
+  const profileFileInput = document.querySelector("#profile-avatar-file");
+  const profilePickButton = document.querySelector("[data-profile-pick]");
+  const profileRemoveButton = document.querySelector("[data-profile-remove]");
+  const profileAvatar = document.querySelector("[data-profile-avatar]");
+  const profileFallback = document.querySelector("[data-profile-avatar-fallback]");
+  const profileMiniAvatar = document.querySelector("[data-profile-mini-avatar]");
+  const profileStatus = document.querySelector("[data-profile-status]");
+  const profileFormStatus = document.querySelector("[data-profile-form-status]");
+  const profileSecurityStatus = document.querySelector("[data-profile-security-status]");
+  const profileCurrentSection = document.querySelector("[data-profile-current-section]");
+  const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
+  const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
   let mode = "signin";
   let auth = null;
   let db = null;
+  let storage = null;
+  let currentUser = null;
+  let currentProfile = null;
+  let avatarObjectUrl = null;
+  let profileLoadCounter = 0;
+
   let configured = Boolean(
     firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_") &&
     firebaseConfig.authDomain && !firebaseConfig.authDomain.startsWith("YOUR_") &&
     firebaseConfig.projectId && !firebaseConfig.projectId.startsWith("YOUR_") &&
     firebaseConfig.appId && !firebaseConfig.appId.startsWith("YOUR_")
   );
-  let accountStatusText = "Signed in.";
 
   const setMessage = (text, state = "") => {
     if (!message) return;
@@ -45,14 +72,105 @@ if (modal) {
     message.dataset.state = state;
   };
 
-  const setAccountStatus = (text) => {
-    accountStatusText = text;
-    if (accountStatus) accountStatus.textContent = text;
+  const setStatus = (element, text, state = "") => {
+    if (!element) return;
+    element.textContent = text;
+    element.dataset.state = state;
+  };
+
+  const displayNameFor = (user, profile = {}) =>
+    profile.displayName || user?.displayName || (user?.email ? user.email.split("@")[0] : "Client");
+
+  const initialsFor = (value) => {
+    const words = String(value || "ORVEXA").trim().split(/\s+/).filter(Boolean);
+    return words.slice(0, 2).map(word => word[0].toUpperCase()).join("") || "OD";
+  };
+
+  const revokeAvatarUrl = () => {
+    if (avatarObjectUrl) {
+      URL.revokeObjectURL(avatarObjectUrl);
+      avatarObjectUrl = null;
+    }
+  };
+
+  const showAvatarFallback = (user, profile = {}) => {
+    const initials = initialsFor(displayNameFor(user, profile));
+    if (profileFallback) {
+      profileFallback.textContent = initials;
+      profileFallback.hidden = false;
+    }
+    if (profileMiniAvatar) profileMiniAvatar.textContent = initials;
+    if (profileAvatar) {
+      profileAvatar.hidden = true;
+      profileAvatar.removeAttribute("src");
+    }
+  };
+
+  const renderAvatarFromBytes = (bytes, mimeType, user, profile = {}) => {
+    revokeAvatarUrl();
+    avatarObjectUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType || "image/jpeg" }));
+    if (profileAvatar) {
+      profileAvatar.src = avatarObjectUrl;
+      profileAvatar.hidden = false;
+    }
+    if (profileFallback) profileFallback.hidden = true;
+    if (profileMiniAvatar) {
+      profileMiniAvatar.textContent = initialsFor(displayNameFor(user, profile));
+      profileMiniAvatar.classList.add("has-avatar");
+    }
+  };
+
+  const renderProfileFields = (user, profile) => {
+    const displayName = displayNameFor(user, profile);
+    if (profileName) profileName.value = profile.displayName || user.displayName || "";
+    if (profileEmail) profileEmail.value = user.email || profile.email || "";
+    if (profileBusiness) profileBusiness.value = profile.businessName || "";
+    if (profileBio) profileBio.value = profile.bio || "";
+
+    document.querySelectorAll("[data-profile-side-name]").forEach(el => el.textContent = displayName);
+    document.querySelectorAll("[data-profile-side-email]").forEach(el => el.textContent = user.email || "");
+    document.querySelectorAll("[data-profile-greeting]").forEach(el => el.textContent = displayName.split(/\s+/)[0] || "there");
+
+    const createdAt = profile.createdAt?.toDate
+      ? profile.createdAt.toDate()
+      : (user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null);
+    const memberSince = createdAt && !Number.isNaN(createdAt.getTime())
+      ? new Intl.DateTimeFormat("en-IN", { month: "short", year: "numeric" }).format(createdAt)
+      : "Recently";
+    document.querySelectorAll("[data-profile-member-since]").forEach(el => el.textContent = memberSince);
+
+    const verified = Boolean(user.emailVerified);
+    document.querySelectorAll("[data-profile-verification]").forEach(el => el.textContent = verified ? "Verified" : "Pending");
+    document.querySelectorAll("[data-profile-verification-note]").forEach(el => el.textContent = verified ? "Your email is confirmed" : "Verify your email for extra security");
+    document.querySelectorAll("[data-profile-security-email]").forEach(el => el.textContent = verified ? "Your email address has been verified." : "Your email address has not been verified yet.");
+    document.querySelectorAll("[data-profile-security-badge]").forEach(el => {
+      el.textContent = verified ? "VERIFIED" : "PENDING";
+      el.classList.toggle("is-verified", verified);
+    });
+
+    showAvatarFallback(user, profile);
+    if (profileRemoveButton) profileRemoveButton.hidden = !profile.avatarPath;
+  };
+
+  const setProfileView = (viewName) => {
+    profileTabs.forEach(button => {
+      const active = button.dataset.profileTab === viewName;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-current", active ? "page" : "false");
+    });
+    profileViews.forEach(view => {
+      view.hidden = view.dataset.profileView !== viewName;
+    });
+    if (profileCurrentSection) {
+      const names = { overview: "Overview", details: "Personal details", security: "Security" };
+      profileCurrentSection.textContent = names[viewName] || "Overview";
+    }
   };
 
   const openModal = () => {
     modal.hidden = false;
     document.body.classList.add("auth-open");
+    if (currentUser) setProfileView("overview");
     modal.querySelector("[data-auth-close]")?.focus();
   };
 
@@ -118,7 +236,7 @@ if (modal) {
   const friendlyError = (error) => {
     const code = error?.code || "unknown";
     const errors = {
-      "auth/email-already-in-use": "This email already has an account. Switch to Sign in and use the same password, or reset it.",
+      "auth/email-already-in-use": "This email already has an account. Switch to Sign in or reset your password.",
       "auth/invalid-email": "Enter a valid email address.",
       "auth/invalid-credential": "Email or password is incorrect.",
       "auth/user-not-found": "No account was found for this email. Create an account first.",
@@ -128,41 +246,88 @@ if (modal) {
       "auth/too-many-requests": "Too many attempts. Wait a little and try again.",
       "auth/popup-closed-by-user": "The Google sign-in window was closed before completion.",
       "auth/popup-blocked": "Allow pop-ups for this website, then try Google sign-in again.",
-      "auth/operation-not-allowed": "This sign-in method is disabled. In Firebase, open Authentication → Sign-in method and enable it.",
-      "auth/unauthorized-domain": "Firebase rejected this website domain. Add mobdev-jpg.github.io under Authentication → Settings → Authorized domains.",
-      "auth/configuration-not-found": "Firebase Authentication is not configured. Check the project's Authentication settings.",
-      "auth/api-key-not-valid": "The Firebase API key is invalid. Check firebase-config.js against Project settings → Your apps.",
-      "auth/invalid-api-key": "The Firebase API key is invalid. Check firebase-config.js against Project settings → Your apps.",
-      "auth/network-request-failed": "The request could not reach Firebase. Check your internet connection, browser extensions and network restrictions.",
-      "auth/email-change-needs-verification": "Firebase needs you to verify the email address before changing it.",
-      "permission-denied": "Firebase Authentication may have created the account, but Firestore denied the profile save. Check that the ORVEXA Firestore rules were published.",
-      "unavailable": "Firestore is temporarily unavailable. Your sign-in may still work; please try again."
+      "auth/operation-not-allowed": "This sign-in method is disabled. Enable it under Firebase → Authentication → Sign-in method.",
+      "auth/unauthorized-domain": "Add mobdev-jpg.github.io under Firebase → Authentication → Settings → Authorized domains.",
+      "auth/configuration-not-found": "Firebase Authentication is not configured. Check your Firebase project settings.",
+      "auth/api-key-not-valid": "Firebase rejected the web API key. Check its API restrictions and project association.",
+      "auth/invalid-api-key": "Firebase rejected the web API key. Check its API restrictions and project association.",
+      "auth/network-request-failed": "The request could not reach Firebase. Check your connection and browser extensions.",
+      "permission-denied": "Firestore denied this profile action. Publish the latest firestore.rules file from the repository.",
+      "unavailable": "Firestore is temporarily unavailable. Try again in a moment.",
+      "storage/unauthorized": "Storage denied access. Confirm that storage.rules is published and that you are signed in.",
+      "storage/bucket-not-found": "The Firebase Storage bucket is not ready. Create the Storage bucket in Firebase Console first.",
+      "storage/quota-exceeded": "The Storage quota was exceeded. Check the project's billing and usage.",
+      "storage/unknown": "Firebase Storage returned an access error. On the Spark plan, Firebase Storage is unavailable; it requires the Blaze billing plan."
     };
     return (errors[code] || "Firebase could not complete the request.") + " (Error code: " + code + ")";
   };
 
-  const ensureProfile = async (user, displayName = "") => {
+  const profileReference = (user) => doc(db, "users", user.uid);
+
+  const ensureUserProfile = async (user) => {
     if (!db) throw new Error("Firestore is not initialised.");
-    const reference = doc(db, "users", user.uid);
-    const existing = await getDoc(reference);
-    if (!existing.exists()) {
+    const reference = profileReference(user);
+    let snapshot = await getDoc(reference);
+    if (!snapshot.exists()) {
       await setDoc(reference, {
-        displayName: displayName || user.displayName || "",
+        displayName: user.displayName || "",
         email: user.email || "",
+        businessName: "",
+        bio: "",
+        avatarPath: "",
+        avatarType: "",
         createdAt: serverTimestamp()
       });
+      snapshot = await getDoc(reference);
+    }
+    return snapshot.data() || {};
+  };
+
+  const loadPrivateAvatar = async (user, profile, requestId) => {
+    revokeAvatarUrl();
+    showAvatarFallback(user, profile);
+    if (!profile.avatarPath || !storage) {
+      if (profileRemoveButton) profileRemoveButton.hidden = !profile.avatarPath;
+      return;
+    }
+    try {
+      const bytes = await getBytes(storageRef(storage, profile.avatarPath), MAX_AVATAR_BYTES);
+      if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return;
+      renderAvatarFromBytes(bytes, profile.avatarType || "image/jpeg", user, profile);
+      if (profileRemoveButton) profileRemoveButton.hidden = false;
+    } catch (error) {
+      console.error("ORVEXA private avatar load failed:", error?.code || error);
+      if (profileRemoveButton) profileRemoveButton.hidden = false;
+      setStatus(profileStatus, "Your profile photo could not load. " + friendlyError(error), "error");
     }
   };
 
-  const trySaveProfile = async (user, displayName = "") => {
+  const loadAccountProfile = async (user) => {
+    const requestId = ++profileLoadCounter;
+    currentProfile = null;
+    setStatus(profileStatus, "Loading your private profile…");
     try {
-      await ensureProfile(user, displayName);
-      return true;
+      const profile = await ensureUserProfile(user);
+      if (requestId !== profileLoadCounter || currentUser?.uid !== user.uid) return;
+      currentProfile = profile;
+      renderProfileFields(user, profile);
+      await loadPrivateAvatar(user, profile, requestId);
+      if (requestId === profileLoadCounter && !profile.avatarPath) {
+        setStatus(profileStatus, "Your private account is ready.");
+      } else if (requestId === profileLoadCounter && profile.avatarPath) {
+        setStatus(profileStatus, "Your account and profile photo are loaded.");
+      }
     } catch (error) {
-      // Authentication must not be reported as failed if profile storage is unavailable.
-      console.error("ORVEXA profile save failed:", error?.code || error?.message || error);
-      return false;
+      console.error("ORVEXA profile load failed:", error?.code || error);
+      setStatus(profileStatus, "Your login is active, but profile data could not load. " + friendlyError(error), "error");
     }
+  };
+
+  const updateAccountButtons = (user) => {
+    accountButtons.forEach(button => {
+      button.innerHTML = user ? "My account <span>↗</span>" : "Sign in <span>↗</span>";
+      button.setAttribute("aria-label", user ? "Open my account" : "Sign in");
+    });
   };
 
   accountButtons.forEach(button => button.addEventListener("click", openModal));
@@ -174,6 +339,7 @@ if (modal) {
     if (event.key === "Escape" && !modal.hidden) closeModal();
   });
   modeButtons.forEach(button => button.addEventListener("click", () => setMode(button.dataset.authMode)));
+  profileTabs.forEach(button => button.addEventListener("click", () => setProfileView(button.dataset.profileTab)));
 
   if (!configured) {
     setMode("signin");
@@ -181,22 +347,27 @@ if (modal) {
     try {
       const app = initializeApp(firebaseConfig);
       auth = getAuth(app);
-      try {
-        db = getFirestore(app);
-      } catch (error) {
-        console.error("ORVEXA Firestore initialisation failed:", error?.code || error);
-      }
+      db = getFirestore(app);
+      storage = getStorage(app);
 
-      onAuthStateChanged(auth, user => {
+      onAuthStateChanged(auth, async user => {
+        currentUser = user || null;
         const signedIn = Boolean(user);
         guestPanel.hidden = signedIn;
         userPanel.hidden = !signedIn;
-        emailView.textContent = user?.email || "";
-        if (signedIn) setAccountStatus(accountStatusText);
-        accountButtons.forEach(button => {
-          button.innerHTML = signedIn ? "My account" : "Sign in <span>↗</span>";
-          button.setAttribute("aria-label", signedIn ? "Open account" : "Sign in");
-        });
+        updateAccountButtons(user);
+
+        if (signedIn) {
+          await loadAccountProfile(user);
+          if (profileSecurityStatus) setStatus(profileSecurityStatus, "");
+        } else {
+          profileLoadCounter++;
+          currentProfile = null;
+          revokeAvatarUrl();
+          setStatus(profileStatus, "");
+          setStatus(profileFormStatus, "");
+          setStatus(profileSecurityStatus, "");
+        }
       }, error => {
         setMessage(friendlyError(error), "error");
       });
@@ -214,10 +385,9 @@ if (modal) {
       signOutButton.disabled = true;
       try {
         await signOut(auth);
-        setAccountStatus("You have signed out.");
         closeModal();
       } catch (error) {
-        setAccountStatus(friendlyError(error));
+        setStatus(profileStatus, friendlyError(error), "error");
       } finally {
         signOutButton.disabled = false;
       }
@@ -227,7 +397,7 @@ if (modal) {
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (!configured || !auth) {
-      setMessage("Firebase is not connected. Check firebase-config.js and the Firebase web app settings.", "error");
+      setMessage("Firebase is not connected. Check firebase-config.js and Firebase Authentication settings.", "error");
       return;
     }
     if (!form.reportValidity()) return;
@@ -248,42 +418,174 @@ if (modal) {
     try {
       if (mode === "signup") {
         const credential = await createUserWithEmailAndPassword(auth, email, password);
-
         if (fullName) {
-          try {
-            await updateProfile(credential.user, { displayName: fullName });
-          } catch (error) {
-            console.error("ORVEXA display name update failed:", error?.code || error);
-          }
+          try { await updateProfile(credential.user, { displayName: fullName }); }
+          catch (error) { console.error("ORVEXA display name update failed:", error?.code || error); }
         }
-
-        const profileSaved = await trySaveProfile(credential.user, fullName);
-        let verificationSent = false;
         try {
           await sendEmailVerification(credential.user);
-          verificationSent = true;
+          setStatus(profileStatus, "Account created. A verification link has been sent to your email.", "success");
         } catch (error) {
-          console.error("ORVEXA verification email could not be sent:", error?.code || error);
+          setStatus(profileStatus, "Account created. Email verification could not be sent right now.", "error");
         }
-
         form.reset();
         resetPasswordVisibility();
-        setAccountStatus(
-          "Account created successfully. " +
-          (verificationSent ? "Check your inbox to verify your email. " : "Email verification could not be sent right now. ") +
-          (profileSaved ? "Your private profile is saved." : "Your login works, but profile storage needs a Firestore rules check.")
-        );
+        // onAuthStateChanged opens this user's own profile automatically.
       } else {
-        const credential = await signInWithEmailAndPassword(auth, email, password);
-        setAccountStatus("Signed in successfully. " + (credential.user.emailVerified ? "Your email is verified." : "Your email is not verified yet."));
+        await signInWithEmailAndPassword(auth, email, password);
         form.reset();
         resetPasswordVisibility();
+        // onAuthStateChanged loads the signed-in user's private profile.
       }
     } catch (error) {
       setMessage(friendlyError(error), "error");
     } finally {
       submitButton.disabled = false;
       submitButton.innerHTML = mode === "signup" ? "Create account <span>↗</span>" : "Sign in <span>↗</span>";
+    }
+  });
+
+  if (profileForm) {
+    profileForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!currentUser || !db) {
+        setStatus(profileFormStatus, "Sign in again to update your profile.", "error");
+        return;
+      }
+      if (!profileForm.reportValidity()) return;
+      const displayName = String(profileName.value || "").trim();
+      const businessName = String(profileBusiness.value || "").trim();
+      const bio = String(profileBio.value || "").trim();
+      if (!displayName) {
+        setStatus(profileFormStatus, "Enter your name before saving.", "error");
+        return;
+      }
+
+      profileSaveButton.disabled = true;
+      profileSaveButton.textContent = "Saving…";
+      setStatus(profileFormStatus, "");
+      try {
+        await updateProfile(currentUser, { displayName });
+        await updateDoc(profileReference(currentUser), {
+          displayName,
+          businessName,
+          bio,
+          updatedAt: serverTimestamp()
+        });
+        currentProfile = { ...(currentProfile || {}), displayName, businessName, bio };
+        renderProfileFields(currentUser, currentProfile);
+        setStatus(profileFormStatus, "Your profile has been saved.", "success");
+      } catch (error) {
+        console.error("ORVEXA profile update failed:", error?.code || error);
+        setStatus(profileFormStatus, friendlyError(error), "error");
+      } finally {
+        profileSaveButton.disabled = false;
+        profileSaveButton.innerHTML = "Save changes <span>↗</span>";
+      }
+    });
+  }
+
+  if (profilePickButton && profileFileInput) {
+    profilePickButton.addEventListener("click", () => profileFileInput.click());
+    profileFileInput.addEventListener("change", async () => {
+      const file = profileFileInput.files?.[0];
+      profileFileInput.value = "";
+      if (!file) return;
+      if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+        setStatus(profileStatus, "Choose a JPG, PNG or WEBP image.", "error");
+        return;
+      }
+      if (file.size >= MAX_AVATAR_BYTES) {
+        setStatus(profileStatus, "Choose an image smaller than 10 MB.", "error");
+        return;
+      }
+      if (!currentUser || !storage || !db) {
+        setStatus(profileStatus, "Sign in and make sure Firebase Storage is configured before uploading.", "error");
+        return;
+      }
+
+      profilePickButton.disabled = true;
+      profilePickButton.textContent = "Uploading…";
+      setStatus(profileStatus, "Uploading your private profile photo…");
+      try {
+        await ensureUserProfile(currentUser);
+        const path = "users/" + currentUser.uid + "/profile/avatar";
+        await uploadBytes(storageRef(storage, path), file, {
+          contentType: file.type,
+          cacheControl: "private, max-age=3600"
+        });
+        await updateDoc(profileReference(currentUser), {
+          avatarPath: path,
+          avatarType: file.type,
+          updatedAt: serverTimestamp()
+        });
+        currentProfile = { ...(currentProfile || {}), avatarPath: path, avatarType: file.type };
+        const bytes = await getBytes(storageRef(storage, path), MAX_AVATAR_BYTES);
+        renderAvatarFromBytes(bytes, file.type, currentUser, currentProfile);
+        if (profileRemoveButton) profileRemoveButton.hidden = false;
+        setStatus(profileStatus, "Your profile photo has been uploaded.", "success");
+      } catch (error) {
+        console.error("ORVEXA avatar upload failed:", error?.code || error);
+        setStatus(profileStatus, friendlyError(error), "error");
+      } finally {
+        profilePickButton.disabled = false;
+        profilePickButton.textContent = "Change photo";
+      }
+    });
+  }
+
+  if (profileRemoveButton) {
+    profileRemoveButton.addEventListener("click", async () => {
+      if (!currentUser || !currentProfile?.avatarPath || !storage || !db) return;
+      profileRemoveButton.disabled = true;
+      setStatus(profileStatus, "Removing your profile photo…");
+      try {
+        await deleteObject(storageRef(storage, currentProfile.avatarPath));
+        await updateDoc(profileReference(currentUser), {
+          avatarPath: "",
+          avatarType: "",
+          updatedAt: serverTimestamp()
+        });
+        currentProfile.avatarPath = "";
+        currentProfile.avatarType = "";
+        revokeAvatarUrl();
+        showAvatarFallback(currentUser, currentProfile);
+        profileRemoveButton.hidden = true;
+        setStatus(profileStatus, "Your profile photo has been removed.", "success");
+      } catch (error) {
+        console.error("ORVEXA avatar removal failed:", error?.code || error);
+        setStatus(profileStatus, friendlyError(error), "error");
+      } finally {
+        profileRemoveButton.disabled = false;
+      }
+    });
+  }
+
+  const resetPasswordForCurrentUser = async () => {
+    if (!currentUser?.email || !auth) {
+      setStatus(profileSecurityStatus, "Your account email is unavailable. Sign in again.", "error");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, currentUser.email);
+      setStatus(profileSecurityStatus, "A password reset link has been sent if the email address is registered.", "success");
+    } catch (error) {
+      setStatus(profileSecurityStatus, friendlyError(error), "error");
+    }
+  };
+
+  document.querySelector("[data-profile-reset]")?.addEventListener("click", resetPasswordForCurrentUser);
+  document.querySelector("[data-profile-verify]")?.addEventListener("click", async () => {
+    if (!currentUser) return;
+    if (currentUser.emailVerified) {
+      setStatus(profileSecurityStatus, "Your email is already verified.", "success");
+      return;
+    }
+    try {
+      await sendEmailVerification(currentUser);
+      setStatus(profileSecurityStatus, "Verification email sent. Check your inbox.", "success");
+    } catch (error) {
+      setStatus(profileSecurityStatus, friendlyError(error), "error");
     }
   });
 
@@ -313,13 +615,14 @@ if (modal) {
     }
     googleButton.disabled = true;
     try {
-      const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      const profileSaved = await trySaveProfile(result.user);
-      setAccountStatus("Signed in with Google. " + (profileSaved ? "Your private profile is saved." : "Profile storage needs a Firestore rules check."));
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      // onAuthStateChanged loads the Google user's own profile document.
     } catch (error) {
       setMessage(friendlyError(error), "error");
     } finally {
       googleButton.disabled = false;
     }
   });
+
+  setProfileView("overview");
 }
