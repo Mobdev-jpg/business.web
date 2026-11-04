@@ -228,6 +228,7 @@ body[data-theme="light"] .outcome-card p,body[data-theme="light"] .process-step 
  .tag-top:hover{transform:translateY(-8px) scale(1.05) rotate(1deg)}
  .tag-bottom:hover{transform:translateY(-6px) scale(1.04) rotate(-1deg)}
 }
-body[data-theme="light"] .hero-video-shade{background:linear-gradient(90deg,rgba(0,0,0,.66) 0%,rgba(0,0,0,.48) 47%,rgba(0,0,0,.26) 100%),linear-gradient(0deg,rgba(0,0,0,.24),transparent 46%)}
+body[data-theme="light"] .hero-work-video{filter:grayscale(1) brightness(.88)}
+body[data-theme="light"] .hero-video-shade{background:linear-gradient(90deg,rgba(255,255,255,.84) 0%,rgba(255,255,255,.72) 47%,rgba(255,255,255,.56) 100%),linear-gradient(0deg,rgba(255,255,255,.18),transparent 46%)}
 @media(max-width:680px){.hero-work-video{object-position:55% center}.hero-video-shade{background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.48))}}
 @media(prefers-reduced-motion:reduce){.hero-work-video{display:none}.browser-card,.float-tag{transition:none}}
