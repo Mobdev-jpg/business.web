@@ -1,24 +1,52 @@
-document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav){toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');toggle.textContent=open?'×':'☰'});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰'}))}document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());const themeButton=document.querySelector('.theme-toggle');const applyTheme=theme=>{document.body.dataset.theme=theme;if(themeButton){themeButton.textContent=theme==='dark'?'☼':'◐';themeButton.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');themeButton.title=theme==='dark'?'Switch to light theme':'Switch to dark theme'}document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111111':'#ffffff')};const saved='dark';applyTheme(saved);if(themeButton)themeButton.addEventListener('click',()=>{const next=document.body.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('orvexa-theme',next)}catch(e){}});const form=document.querySelector('.contact-form');if(form){const serviceSelect=form.querySelector('[name="service"]');const requestedService=new URLSearchParams(window.location.search).get('service');if(serviceSelect&&requestedService){const requested=requestedService.toLowerCase();const target=requested.includes('paid')||requested.includes('meta ads')?'Paid advertising / Meta Ads':requested.includes('setup')?'Social media profile setup':requested.includes('social')||requested.includes('growth')?'Social media marketing':requestedService;const option=[...serviceSelect.options].find(item=>item.value.toLowerCase()===target.toLowerCase());if(option)serviceSelect.value=option.value}form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form);const message=[
- 'ORVEXA DIGITAL — Project Enquiry',
- '',
- 'Name: '+data.get('name'),
- 'Email: '+data.get('email'),
- 'Business: '+(data.get('business')||'Not provided'),
- 'Service: '+data.get('service'),
- '',
- 'Project details:',
- data.get('message')
-].join('\n');
-const encoded=encodeURIComponent(message);
-const phone='919332095869';
-const whatsapp=form.querySelector('[data-send-whatsapp]');
-const whatsappBusiness=form.querySelector('[data-send-business]');
-const emailLink=form.querySelector('[data-send-email]');
-const panel=form.querySelector('[data-contact-send-options]');
-if(whatsapp)whatsapp.href='https://wa.me/'+phone+'?text='+encoded;
-if(whatsappBusiness)whatsappBusiness.href='https://api.whatsapp.com/send?phone='+phone+'&text='+encoded;
-if(emailLink)emailLink.href='https://mail.google.com/mail/?view=cm&fs=1&to=arpansubba775@gmail.com&su='+encodeURIComponent('ORVEXA DIGITAL enquiry — '+data.get('name'))+'&body='+encoded;
-if(panel){panel.hidden=false;panel.scrollIntoView({behavior:'smooth',block:'nearest'})}})}});
+document.addEventListener('DOMContentLoaded',()=>{const toggle=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav){toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');toggle.textContent=open?'×':'☰'});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.textContent='☰'}))}document.querySelectorAll('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());const themeButton=document.querySelector('.theme-toggle');const applyTheme=theme=>{document.body.dataset.theme=theme;if(themeButton){themeButton.textContent=theme==='dark'?'☼':'◐';themeButton.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');themeButton.title=theme==='dark'?'Switch to light theme':'Switch to dark theme'}document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111111':'#ffffff')};const saved='dark';applyTheme(saved);if(themeButton)themeButton.addEventListener('click',()=>{const next=document.body.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('orvexa-theme',next)}catch(e){}});const form=document.querySelector('.contact-form');if(form){const serviceSelect=form.querySelector('[name="service"]');const requestedService=new URLSearchParams(window.location.search).get('service');if(serviceSelect&&requestedService){const requested=requestedService.toLowerCase();const target=requested.includes('paid')||requested.includes('meta ads')?'Paid advertising / Meta Ads':requested.includes('setup')?'Social media profile setup':requested.includes('social')||requested.includes('growth')?'Social media marketing':requestedService;const option=[...serviceSelect.options].find(item=>item.value.toLowerCase()===target.toLowerCase());if(option)serviceSelect.value=option.value}const modal=form.querySelector('[data-contact-modal]');
+const dialog=modal?.querySelector('.contact-modal');
+const closeButtons=form.querySelectorAll('[data-close-contact-modal]');
+const closeModal=()=>{
+ if(!modal||modal.hidden)return;
+ modal.hidden=true;
+ document.body.classList.remove('contact-modal-open');
+ form.querySelector('button[type="submit"]')?.focus();
+};
+closeButtons.forEach(button=>button.addEventListener('click',closeModal));
+if(modal){
+ modal.addEventListener('click',event=>{if(event.target===modal)closeModal()});
+ document.addEventListener('keydown',event=>{
+  if(modal.hidden)return;
+  if(event.key==='Escape'){event.preventDefault();closeModal();return}
+  if(event.key==='Tab'&&dialog){
+   const focusable=[...dialog.querySelectorAll('a[href],button:not([disabled])')].filter(el=>el.offsetParent!==null);
+   if(!focusable.length)return;
+   const first=focusable[0],last=focusable[focusable.length-1];
+   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  }
+ });
+}
+form.addEventListener('submit',e=>{
+ e.preventDefault();
+ if(!form.reportValidity())return;
+ const data=new FormData(form);
+ const message=[
+  'ORVEXA DIGITAL — Project Enquiry',
+  '',
+  'Name: '+data.get('name'),
+  'Email: '+data.get('email'),
+  'Business: '+(data.get('business')||'Not provided'),
+  'Service: '+data.get('service'),
+  '',
+  'Project details:',
+  data.get('message')
+ ].join('\n');
+ const encoded=encodeURIComponent(message);
+ const phone='919332095869';
+ const whatsapp=form.querySelector('[data-send-whatsapp]');
+ const whatsappBusiness=form.querySelector('[data-send-business]');
+ const emailLink=form.querySelector('[data-send-email]');
+ if(whatsapp)whatsapp.href='https://wa.me/'+phone+'?text='+encoded;
+ if(whatsappBusiness)whatsappBusiness.href='https://api.whatsapp.com/send?phone='+phone+'&text='+encoded;
+ if(emailLink)emailLink.href='https://mail.google.com/mail/?view=cm&fs=1&to=arpansubba775@gmail.com&su='+encodeURIComponent('ORVEXA DIGITAL enquiry — '+data.get('name'))+'&body='+encoded;
+ if(modal){modal.hidden=false;document.body.classList.add('contact-modal-open');modal.querySelector('[data-close-contact-modal]')?.focus()}
+})}});
 /* Smooth hero video playback: preload early, retry after buffering, respect visibility. */
 (()=>{
  const video=document.querySelector('.hero-work-video');
