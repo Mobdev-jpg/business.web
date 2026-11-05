@@ -747,3 +747,25 @@ body[data-theme="light"] .contact-modal-close:hover,body[data-theme="light"] .co
  .contact-modal-footer{align-items:flex-start;flex-direction:column}
 }
 @media(prefers-reduced-motion:reduce){.contact-modal-backdrop,.contact-modal{animation:none}.contact-modal-option,.contact-modal-close,.contact-app-arrow{transition:none}}
+
+
+/* Homepage service grid: four visible cards with a stable show-more control */
+@media(min-width:901px){#home-service-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+#home-service-grid>[data-extra-service][hidden]{display:none!important}
+.service-expand-wrap{display:flex;flex-direction:column;align-items:center;gap:7px;margin:26px auto 0}
+.service-expand-button{display:inline-flex;align-items:center;justify-content:center;gap:16px;min-width:190px;padding:12px 18px;border:1px solid #777;border-radius:999px;background:linear-gradient(110deg,#292929,#1b1b1b);color:#f3f3f3;font:700 12px 'DM Sans',sans-serif;letter-spacing:.2px;cursor:pointer;box-shadow:0 9px 24px #0003;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.service-expand-button:hover{transform:translateY(-3px);border-color:#bbb;background:linear-gradient(110deg,#373737,#222);box-shadow:0 14px 30px #0005}
+.service-expand-button:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.service-expand-icon{display:grid;place-items:center;width:23px;height:23px;border:1px solid #666;border-radius:50%;font-size:13px;line-height:1;transition:transform .2s ease}
+.service-expand-button[aria-expanded="true"] .service-expand-icon{transform:rotate(180deg)}
+.service-expand-note{margin:0;color:#888;font-size:10px;letter-spacing:.2px;text-align:center}
+.service-card-reveal{animation:service-card-appear .32s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(var(--service-reveal-order,0)*55ms)}
+@keyframes service-card-appear{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+body[data-theme="light"] .service-expand-button{background:linear-gradient(110deg,#fff,#eee);color:#111;border-color:#aaa;box-shadow:0 9px 24px #0001}
+body[data-theme="light"] .service-expand-button:hover{background:#fff;border-color:#555}
+body[data-theme="light"] .service-expand-button:focus-visible{outline-color:#111}
+body[data-theme="light"] .service-expand-icon{border-color:#aaa}
+body[data-theme="light"] .service-expand-note{color:#666}
+@media(max-width:900px){#home-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){#home-service-grid{grid-template-columns:1fr}.service-expand-wrap{margin-top:20px}}
+@media(prefers-reduced-motion:reduce){.service-expand-button,.service-expand-icon{transition:none}.service-card-reveal{animation:none}}
