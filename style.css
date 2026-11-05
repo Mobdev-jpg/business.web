@@ -213,7 +213,7 @@ body[data-theme="light"] .outcome-card p,body[data-theme="light"] .process-step 
 @media(max-width:560px){.outcomes-grid,.process-grid{grid-template-columns:1fr}.outcome-card{min-height:0}.process-step{border-right:0;border-bottom:1px solid #555}.process-step:last-child{border-bottom:0}.process-step:nth-child(2){border-bottom:1px solid #555}}
 
 
-/* Live workspace video and refined browser-card hover interaction */
+
 .hero{isolation:isolate;background-color:#101010}
 .hero-work-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 52%;z-index:0;filter:grayscale(1) brightness(.62);pointer-events:none}
 .hero-video-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.67) 42%,rgba(0,0,0,.44) 100%),linear-gradient(0deg,rgba(0,0,0,.36),transparent 42%,rgba(0,0,0,.2))}
