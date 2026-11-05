@@ -661,3 +661,26 @@ body[data-theme="light"] .website-pricing-divider b{border-color:#777;color:#222
 
 .service-platform-note{margin:-5px 0 18px;color:#999;font-size:10px;line-height:1.7}
 body[data-theme="light"] .service-platform-note{color:#555}
+
+
+/* Contact form delivery choices: avoid triggering the operating-system mailto chooser */
+.contact-send-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:20px;border:1px solid #555;border-radius:14px;background:linear-gradient(145deg,#252525,#171717);box-shadow:0 14px 34px #0004}
+.contact-send-options[hidden]{display:none}
+.contact-send-heading{grid-column:1/-1}
+.contact-send-heading .eyebrow{margin-bottom:7px}
+.contact-send-heading h3{font-size:21px;margin:0 0 6px;color:#f4f4f4}
+.contact-send-heading p{font-size:12px;color:#aaa;margin:0 0 8px}
+.contact-send-option{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:6px;padding:15px 13px;border:1px solid #555;border-radius:10px;background:#202020;transition:transform .2s,border-color .2s,background .2s}
+.contact-send-option:hover{transform:translateY(-3px);border-color:#aaa;background:#2b2b2b}
+.contact-send-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:#383838;color:#fff;font-size:17px}
+.contact-send-option strong{font-size:13px;color:#fff}
+.contact-send-option small{font-size:10px;line-height:1.4;color:#aaa}
+.contact-send-footnote{grid-column:1/-1;margin:0;color:#999;font-size:10px;line-height:1.6}
+.contact-channel-links{display:grid;gap:8px}
+.contact-channel-links a{display:inline-flex;align-items:center;gap:8px;width:max-content;max-width:100%;color:#e6e6e6;font-size:12px}
+body[data-theme="light"] .contact-send-options{background:linear-gradient(145deg,#f7f7f7,#e9e9e9);border-color:#bbb}
+body[data-theme="light"] .contact-send-heading h3,body[data-theme="light"] .contact-send-option strong{color:#111}
+body[data-theme="light"] .contact-send-heading p,body[data-theme="light"] .contact-send-option small,body[data-theme="light"] .contact-send-footnote{color:#555}
+body[data-theme="light"] .contact-send-option{background:#fff;border-color:#ccc}
+body[data-theme="light"] .contact-send-icon{background:#eee;color:#111}
+@media(max-width:680px){.contact-send-options{grid-template-columns:1fr;padding:15px}.contact-send-heading,.contact-send-footnote{grid-column:auto}.contact-send-option{display:grid;grid-template-columns:34px 1fr;align-items:center;column-gap:10px}.contact-send-icon{grid-row:span 2}.contact-send-option strong,.contact-send-option small{grid-column:2}}
