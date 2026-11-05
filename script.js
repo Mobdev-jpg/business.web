@@ -307,3 +307,38 @@ form.addEventListener('submit',e=>{
  });
  renderReviews();
 })();
+
+
+/* Homepage services: reveal the additional cards without shifting or rebuilding the grid. */
+document.addEventListener('DOMContentLoaded',()=>{
+ const toggle=document.querySelector('[data-service-toggle]');
+ const grid=document.querySelector('#home-service-grid');
+ if(!toggle||!grid)return;
+ const extraCards=[...grid.querySelectorAll('[data-extra-service]')];
+ const label=toggle.querySelector('[data-service-toggle-label]');
+ const icon=toggle.querySelector('.service-expand-icon');
+ if(!extraCards.length)return;
+ toggle.addEventListener('click',()=>{
+  const expanded=toggle.getAttribute('aria-expanded')==='true';
+  if(expanded){
+   extraCards.forEach(card=>{
+    card.classList.remove('service-card-reveal');
+    card.hidden=true;
+   });
+   toggle.setAttribute('aria-expanded','false');
+   if(label)label.textContent='Show more services';
+   if(icon)icon.textContent='↓';
+  }else{
+   extraCards.forEach((card,index)=>{
+    card.hidden=false;
+    card.classList.remove('service-card-reveal');
+    void card.offsetWidth;
+    card.classList.add('service-card-reveal');
+    card.style.setProperty('--service-reveal-order',index);
+   });
+   toggle.setAttribute('aria-expanded','true');
+   if(label)label.textContent='Show less';
+   if(icon)icon.textContent='↑';
+  }
+ });
+});
