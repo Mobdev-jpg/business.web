@@ -684,3 +684,66 @@ body[data-theme="light"] .contact-send-heading p,body[data-theme="light"] .conta
 body[data-theme="light"] .contact-send-option{background:#fff;border-color:#ccc}
 body[data-theme="light"] .contact-send-icon{background:#eee;color:#111}
 @media(max-width:680px){.contact-send-options{grid-template-columns:1fr;padding:15px}.contact-send-heading,.contact-send-footnote{grid-column:auto}.contact-send-option{display:grid;grid-template-columns:34px 1fr;align-items:center;column-gap:10px}.contact-send-icon{grid-row:span 2}.contact-send-option strong,.contact-send-option small{grid-column:2}}
+
+
+/* Centered contact app chooser modal */
+.contact-modal-backdrop[hidden]{display:none!important}
+.contact-modal-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.76);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);animation:contact-backdrop-in .2s ease both}
+.contact-modal{position:relative;width:min(100%,540px);max-height:min(88vh,760px);overflow:auto;padding:30px;border:1px solid #626262;border-radius:22px;background:linear-gradient(150deg,#252525 0%,#171717 62%,#111 100%);box-shadow:0 35px 110px rgba(0,0,0,.72),0 0 0 1px rgba(255,255,255,.035);color:#f5f5f5;animation:contact-modal-in .24s cubic-bezier(.2,.75,.25,1) both;outline:none}
+.contact-modal-close{position:absolute;top:17px;right:17px;display:grid;place-items:center;width:36px;height:36px;border:1px solid #555;border-radius:50%;background:#2c2c2c;color:#eee;font-size:23px;line-height:1;cursor:pointer;transition:transform .2s,border-color .2s,background .2s}
+.contact-modal-close:hover{transform:rotate(90deg);border-color:#aaa;background:#3a3a3a}
+.contact-modal-topline{display:flex;align-items:center;gap:10px;padding-bottom:24px;border-bottom:1px solid #ffffff18;color:#aaa;font-size:9px;font-weight:800;letter-spacing:1.7px}
+.contact-modal-topline i{color:#777;font-style:normal;padding:0 3px}
+.contact-modal-mark{display:grid;place-items:center;width:29px;height:29px;border:1px solid #777;border-radius:9px;color:#fff;font:800 19px Manrope,sans-serif;letter-spacing:-1px}
+.contact-modal-heading{padding:25px 42px 19px 0}
+.contact-modal-heading .eyebrow{margin:0 0 9px;color:#aaa;font-size:9px;letter-spacing:2px}
+.contact-modal-heading h3{margin:0 0 9px;color:#fff;font:800 clamp(25px,4vw,32px)/1.15 Manrope,sans-serif;letter-spacing:-1.1px}
+.contact-modal-heading p{max-width:420px;margin:0;color:#aaa;font-size:13px;line-height:1.65}
+.contact-modal-options{display:grid;gap:11px}
+.contact-modal-option{display:flex;align-items:center;gap:15px;min-width:0;padding:14px 16px;border:1px solid #464646;border-radius:14px;background:linear-gradient(110deg,#282828,#202020);text-decoration:none;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+.contact-modal-option:hover{transform:translateY(-2px);border-color:#888;background:linear-gradient(110deg,#303030,#242424);box-shadow:0 12px 26px #0005}
+.contact-app-logo{position:relative;display:grid;flex:0 0 49px;place-items:center;width:49px;height:49px;border:1px solid #ffffff12;border-radius:13px;background:#fff;overflow:hidden}
+.contact-app-logo img{display:block;width:31px;height:31px;object-fit:contain}
+.whatsapp-logo{background:#12291d;border-color:#285b3e}
+.whatsapp-logo img,.whatsapp-business-logo img{filter:none}
+.whatsapp-business-logo{background:#12291d;border-color:#285b3e}
+.whatsapp-business-logo img{width:30px;height:30px}
+.whatsapp-business-logo i{position:absolute;right:2px;bottom:2px;display:grid;place-items:center;width:18px;height:18px;border:2px solid #12291d;border-radius:50%;background:#25D366;color:#073b1d;font-size:15px;font-weight:900;font-style:normal;line-height:1}
+.gmail-logo{background:#fff;border-color:#dedede}
+.gmail-logo img{width:34px;height:34px}
+.contact-app-copy{display:grid;flex:1;min-width:0;gap:3px}
+.contact-app-copy strong{color:#f5f5f5;font-size:14px;font-weight:750;letter-spacing:-.1px}
+.contact-app-copy small{color:#a5a5a5;font-size:11px;line-height:1.45}
+.contact-app-arrow{display:grid;flex:0 0 30px;place-items:center;width:30px;height:30px;border:1px solid #555;border-radius:50%;color:#ddd;font-size:15px;transition:transform .2s,background .2s}
+.contact-modal-option:hover .contact-app-arrow{transform:translate(2px,-2px);background:#3a3a3a}
+.contact-modal-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:21px;padding-top:17px;border-top:1px solid #ffffff18}
+.contact-modal-footer span{display:flex;align-items:center;gap:8px;color:#999;font-size:10px;line-height:1.5}
+.contact-modal-footer span i{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:#25D366;box-shadow:0 0 10px #25D36666}
+.contact-modal-footer button{flex:0 0 auto;padding:9px 13px;border:1px solid #555;border-radius:8px;background:#252525;color:#eee;font:600 11px 'DM Sans',sans-serif;cursor:pointer}
+.contact-modal-footer button:hover{border-color:#aaa;background:#333}
+body.contact-modal-open{overflow:hidden}
+@keyframes contact-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes contact-modal-in{from{opacity:0;transform:translateY(12px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)}}
+body[data-theme="light"] .contact-modal{background:linear-gradient(150deg,#fff,#f1f1f1);border-color:#c9c9c9;color:#111;box-shadow:0 35px 110px #0003}
+body[data-theme="light"] .contact-modal-topline{color:#666;border-color:#ddd}
+body[data-theme="light"] .contact-modal-mark{color:#111;border-color:#999}
+body[data-theme="light"] .contact-modal-heading h3,body[data-theme="light"] .contact-app-copy strong{color:#111}
+body[data-theme="light"] .contact-modal-heading p,body[data-theme="light"] .contact-app-copy small,body[data-theme="light"] .contact-modal-footer span{color:#666}
+body[data-theme="light"] .contact-modal-option{border-color:#d2d2d2;background:linear-gradient(110deg,#fff,#f6f6f6)}
+body[data-theme="light"] .contact-modal-option:hover{border-color:#999;background:#fff;box-shadow:0 12px 26px #0001}
+body[data-theme="light"] .contact-app-arrow{border-color:#ccc;color:#444}
+body[data-theme="light"] .contact-modal-footer{border-color:#ddd}
+body[data-theme="light"] .contact-modal-close,body[data-theme="light"] .contact-modal-footer button{background:#fff;color:#222;border-color:#ccc}
+body[data-theme="light"] .contact-modal-close:hover,body[data-theme="light"] .contact-modal-footer button:hover{background:#eee;border-color:#999}
+@media(max-width:560px){
+ .contact-modal-backdrop{padding:13px}
+ .contact-modal{padding:23px 18px 18px;border-radius:18px;max-height:92vh}
+ .contact-modal-topline{padding-bottom:18px}
+ .contact-modal-heading{padding:21px 36px 17px 0}
+ .contact-modal-option{gap:12px;padding:12px}
+ .contact-app-logo{flex-basis:44px;width:44px;height:44px}
+ .contact-app-copy strong{font-size:13px}
+ .contact-app-copy small{font-size:10px}
+ .contact-modal-footer{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){.contact-modal-backdrop,.contact-modal{animation:none}.contact-modal-option,.contact-modal-close,.contact-app-arrow{transition:none}}
