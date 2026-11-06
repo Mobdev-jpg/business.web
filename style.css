@@ -771,7 +771,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
 @media(prefers-reduced-motion:reduce){.service-expand-button,.service-expand-icon{transition:none}.service-card-reveal{animation:none}}
 
 /* MOBILE-ONLY UI PASS — desktop styles above remain untouched */
-@media (max-width:680px), (pointer:coarse) {
+@media (max-width:680px) {
   html { scroll-padding-top:78px; }
   body { overflow-x:hidden; padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
   .container { width:calc(100% - 32px); max-width:var(--max); }
@@ -1048,7 +1048,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
 }
 
 /* ORVEXA MOBILE EXPERIENCE — touch-primary devices only; desktop remains unchanged */
-@media (pointer:coarse) {
+@media (max-width:680px) {
   :root { scroll-padding-top:76px; }
   html,body { max-width:100%; overflow-x:hidden; }
   body {
@@ -1377,47 +1377,12 @@ body[data-theme="light"] .service-expand-note{color:#666}
 }
 
 
-@media (pointer:coarse) and (min-width:681px) {
-  .landing-page .hero { padding:68px 0 22px; }
-  .landing-page .hero-grid {
-    grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
-    gap:clamp(18px,3.5vw,42px);
-  }
-  .landing-page .hero-copy { min-width:0; }
-  .landing-page .hero h1 {
-    font-size:clamp(36px,4vw,50px);
-    line-height:1.08;
-    max-width:620px;
-  }
-  .landing-page .hero-art {
-    min-height:350px;
-    margin:0;
-    padding:0;
-  }
-  .landing-page .code-card {
-    width:min(100%,510px);
-    max-width:100%;
-  }
-  .landing-page .hero-coffee-cup {
-    right:1%;
-    bottom:4%;
-    width:clamp(76px,10vw,125px);
-    opacity:.82;
-  }
-  .landing-page .hero .button-row {
-    flex-wrap:wrap;
-    gap:11px;
-  }
-  .landing-page .hero .button-row .button {
-    flex:0 1 auto;
-    white-space:nowrap;
-  }
-}
+
 
 
 
 /* Final homepage hero restoration: keep text-left / floating workspace-right on phones */
-@media (pointer:coarse) {
+@media (max-width:680px) {
   .landing-page .hero {
     padding:48px 0 19px;
     overflow:hidden;
