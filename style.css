@@ -1025,7 +1025,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
 }
 
 /* Touch-device readability refinements: preserve visual style, improve legibility */
-@media (pointer:coarse) {
+@media (max-width:680px) {
   .hero-text,.page-hero p:not(.eyebrow),.service-card p,.content-card p,
   .content-card li,.outcome-card p,.process-step p,.muted {
     font-size:15px;
@@ -1357,7 +1357,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
   img,video,svg { max-width:100%; }
   button,a { -webkit-tap-highlight-color:transparent; }
 }
-@media (pointer:coarse) and (max-width:390px) {
+@media (max-width:390px) {
   .container { width:calc(100% - 28px); }
   .brand { font-size:13px; gap:6px; }
   .brand-mark { width:31px; height:31px; font-size:20px; }
@@ -1376,28 +1376,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
   .contact-modal-topline { font-size:8px; letter-spacing:1.2px; }
 }
 
-/* Landing page touch-text adjustment — keep the original hero design */
-@media (pointer:coarse) {
-  .landing-page .hero-text {
-    font-size:16px;
-    line-height:1.85;
-    max-width:560px;
-  }
-  .landing-page .hero .eyebrow {
-    font-size:10px;
-    letter-spacing:2px;
-  }
-  .landing-page .hero .button-row .button {
-    min-height:49px;
-    padding:14px 17px;
-    font-size:14px;
-    gap:13px;
-  }
-  .landing-page .hero-proof { font-size:12px; }
-  .landing-page .float-tag-copy strong { font-size:11px; }
-  .landing-page .float-tag-copy small { font-size:10px; }
-  .landing-page .hero-bottom { font-size:10px; letter-spacing:1.2px; }
-}
+
 @media (pointer:coarse) and (min-width:681px) {
   .landing-page .hero { padding:68px 0 22px; }
   .landing-page .hero-grid {
@@ -1435,122 +1414,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
   }
 }
 
-/* Restore the original circled landing header + hero composition on wider touch screens */
-@media (pointer:coarse) and (min-width:600px) {
-  .landing-page .site-header { height:66px; }
-  .landing-page .nav-wrap { gap:12px; }
-  .landing-page .brand { flex:0 0 auto; font-size:14px; gap:7px; }
-  .landing-page .brand-mark { width:33px; height:33px; }
-  .landing-page .menu-toggle { display:none!important; }
-  .landing-page .nav-links {
-    display:flex!important;
-    position:static;
-    inset:auto;
-    max-height:none;
-    overflow:visible;
-    padding:0;
-    border:0;
-    border-radius:0;
-    background:transparent;
-    box-shadow:none;
-    flex-direction:row;
-    align-items:center;
-    justify-content:center;
-    gap:clamp(9px,1.65vw,16px);
-    flex:1 1 auto;
-    min-width:0;
-  }
-  .landing-page .nav-links a {
-    display:inline-flex;
-    align-items:center;
-    min-height:0;
-    padding:6px 0;
-    border:0;
-    border-radius:0;
-    background:transparent;
-    color:#d0d0d0;
-    font-size:clamp(10px,1.55vw,12px);
-    white-space:nowrap;
-  }
-  .landing-page .nav-links a.active {
-    color:#fff;
-    background:transparent;
-    border:0;
-  }
-  .landing-page .nav-links a.active:after { display:block; }
-  .landing-page .nav-wrap>.button {
-    display:inline-flex!important;
-    position:static;
-    inset:auto;
-    flex:0 0 auto;
-    width:auto;
-    min-height:42px;
-    padding:10px 13px;
-    border-radius:9px;
-    font-size:11px;
-    white-space:nowrap;
-    box-shadow:none;
-  }
-  .landing-page .theme-toggle {
-    flex:0 0 37px;
-    width:37px;
-    height:37px;
-  }
-  .landing-page .hero {
-    padding:58px 0 20px;
-  }
-  .landing-page .hero-grid {
-    grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
-    align-items:center;
-    gap:clamp(14px,2.4vw,24px);
-  }
-  .landing-page .hero-copy { min-width:0; }
-  .landing-page .hero h1 {
-    font-size:clamp(35px,5.2vw,46px);
-    line-height:1.08;
-    max-width:100%;
-    letter-spacing:-1.15px;
-  }
-  .landing-page .hero-text {
-    font-size:clamp(14px,2.05vw,16px);
-    line-height:1.8;
-  }
-  .landing-page .hero .button-row {
-    flex-wrap:wrap;
-    gap:9px;
-    margin-top:23px;
-  }
-  .landing-page .hero .button-row .button {
-    flex:0 1 auto;
-    min-height:46px;
-    padding:12px 13px;
-    font-size:clamp(11px,1.65vw,13px);
-    white-space:nowrap;
-  }
-  .landing-page .hero-art {
-    min-height:310px;
-    margin:0;
-    padding:0;
-  }
-  .landing-page .code-card {
-    width:100%;
-    max-width:510px;
-    transform:none;
-  }
-  .landing-page .hero-coffee-cup {
-    right:1%;
-    bottom:4%;
-    width:clamp(74px,11vw,112px);
-    opacity:.82;
-  }
-  .landing-page .hero-proof { font-size:11px; }
-  .landing-page .hero-bottom {
-    margin-top:31px;
-    padding-top:16px;
-    font-size:9px;
-    letter-spacing:1.2px;
-  }
-}
+
 
 /* Final homepage hero restoration: keep text-left / floating workspace-right on phones */
 @media (pointer:coarse) {
@@ -1631,7 +1495,7 @@ body[data-theme="light"] .service-expand-note{color:#666}
     letter-spacing:1px;
   }
 }
-@media (pointer:coarse) and (max-width:420px) {
+@media (max-width:420px) {
   .landing-page .hero-grid { grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)!important; gap:8px; }
   .landing-page .hero { padding-top:36px; }
   .landing-page .hero h1 { font-size:clamp(24px,7.2vw,30px); letter-spacing:-.8px; }
